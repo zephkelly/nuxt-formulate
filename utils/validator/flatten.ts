@@ -19,6 +19,7 @@ export type RestructuredZodErrors<T = unknown> = T extends object
     : { error?: string };
 
 
+
 /**
  * Restructures a Zod treeified error object to make errors more accessible
  * while maintaining the hierarchy but flattening the top level
@@ -28,39 +29,35 @@ export type RestructuredZodErrors<T = unknown> = T extends object
 export function restructureZodErrors(treeError: any): Record<string, any> {
     let result: Record<string, any> = {};
     
-    // Process properties directly at the top level
+    // -------------------------------------------------------------------------
+    // Handle current item errors
+    // -------------------------------------------------------------------------
     if (treeError.properties) {
-      Object.entries(treeError.properties).forEach(([key, value]) => {
-        result[key] = restructureZodErrors(value);
-      });
+        Object.entries(treeError.properties).forEach(([key, value]) => {
+            result[key] = restructureZodErrors(value);
+        });
     }
     
-    // Process array items
+    // -------------------------------------------------------------------------
+    // Handle nested item errors
+    // -------------------------------------------------------------------------
     if (treeError.items) {
-      result.items = [];
-      
-      treeError.items.forEach((item: any, index: number) => {
-        if (item) {
-          result.items[index] = restructureZodErrors(item);
-        } else {
-          result.items[index] = undefined;
-        }
-      });
+        result.items = [];
+        
+        treeError.items.forEach((item: any, index: number) => {
+            if (item) {
+                result.items[index] = restructureZodErrors(item);
+            }
+            else {
+                result.items[index] = undefined;
+            }
+        });
     }
     
     // Handle non-top-level errors
     if (treeError.errors && treeError.errors.length > 0) {
-      result = treeError.errors[0];
+        result = treeError.errors[0];
     }
     
     return result;
-  }
-  
-  // Example usage:
-  // const tree = z.treeifyError(result.error);
-  // const errors = flattenZodErrors(tree);
-  // 
-  // Now you can access:
-  // errors.$global - for top-level errors
-  // errors.id - for errors on the id field
-  // errors.actor.email - for nested field errors
+}

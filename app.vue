@@ -1,51 +1,33 @@
 <template>
     <h1>Hello World</h1>
-    <input v-model="state.billingInfo" placeholder="Name" />
+    <input v-model="state.name" placeholder="Name" />
 
     {{ state }}
+    {{ errors }}
 </template>
 
 <script lang="ts" setup>
+import * as z from 'zod';
 
+const TestSchema = z.object({
+    name: z.string().min(1, { message: 'Name is required' }),
+    age: z.number().min(18, { message: 'You must be at least 18 years old' }),
+});
 
-import { UserProfileSchema } from '@/types/test';
+const stateGlobal = useState<z.infer<typeof TestSchema> | undefined>('state-global-test', () => undefined);
 
 const {
     state,
     errors
-} = useFormulate(UserProfileSchema, {
-    defaults: {
-        billingInfo: {
-            paymentMethod: 'credit_card',
-            accountBalance: 1,
-            transactions: [],
-            billingAddress: {
-                street: '',
-                city: '',
-                state: '',
-                zipCode: '',
-                country: '',
-                isPrimary: false,
-                validUntil: undefined
-            }
-        }
-    }
-});
+} = useFormulate('state-global-test', TestSchema);
 
 
+watch(stateGlobal, (newValue) => {
+    console.log('stateGlobal:', newValue);
+}, { deep: true });
 
-watch(errors, (newValue) => {
-    console.log('errors:', newValue);
-});
 
-// watch(() => errors, (newValue) => {
-//     console.log('Errors:', newValue);
-// });
-
-// watch(
-//     () => stateArray.user.id,
-//     (newValue) => {
-//         console.log('New value:', newValue);
-//     }
-// );
+watch(state, (newValue) => {
+    console.log('stateLocal:', newValue);
+}, { deep: true });
 </script>
