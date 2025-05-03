@@ -43,7 +43,7 @@ export function register() {
     if (import.meta.dev && import.meta.server) {
         console.log(
             '%c FORMULATE ', 'color: black; background-color: #0f8dcc; font-weight: bold; font-size: 1.15rem;',
-            '⚡ Registering zod validator adapter'
+            '⚡ Registering Zod adapter'
         );
     }
     registerAdapter('zod', ZodAdapter);

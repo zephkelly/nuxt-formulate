@@ -1,4 +1,4 @@
-export type AdapterType = 'zod' | 'valibot' | 'yup' | 'arktype' | 'standardSchema';
+export type AdapterType = 'zod';
 
 export interface SchemaAdapter<T> {
     /**

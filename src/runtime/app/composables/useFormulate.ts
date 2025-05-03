@@ -51,46 +51,110 @@ type FormulateOptions<TSchema extends SchemaType> = {
     key?: string;
 };
   
-
 export function useFormulate<TSchema extends SchemaType>(
-    schemaOrKey: string | TSchema,
-    schemaOrRefOrOptions?: TSchema | Ref<InferSchemaType<TSchema> | undefined | null> | FormulateOptions<TSchema>,
-    refOrOptions?: Ref<InferSchemaType<TSchema>> | FormulateOptions<TSchema>,
+    schema: TSchema
+): { state: Ref<InferSchemaType<TSchema>>, errors: Ref<ErrorsFromSchema<InferSchemaType<TSchema>>> };
+  
+// useFormulate(validationSchema, refToSyncDataTo)
+export function useFormulate<TSchema extends SchemaType>(
+    schema: TSchema,
+    ref: Ref<InferSchemaType<TSchema> | undefined | null>
+): { state: Ref<InferSchemaType<TSchema>>, errors: Ref<ErrorsFromSchema<InferSchemaType<TSchema>>> };
+  
+// useFormulate(validationSchema, options)
+export function useFormulate<TSchema extends SchemaType>(
+    schema: TSchema,
+    options: FormulateOptions<TSchema>
+): { state: Ref<InferSchemaType<TSchema>>, errors: Ref<ErrorsFromSchema<InferSchemaType<TSchema>>> };
+  
+// useFormulate('key', validationSchema)
+export function useFormulate<TSchema extends SchemaType>(
+    key: string,
+    schema: TSchema
+): { state: Ref<InferSchemaType<TSchema>>, errors: Ref<ErrorsFromSchema<InferSchemaType<TSchema>>> };
+  
+// useFormulate('key', validationSchema, options)
+export function useFormulate<TSchema extends SchemaType>(
+    key: string,
+    schema: TSchema,
+    options: FormulateOptions<TSchema>
+): { state: Ref<InferSchemaType<TSchema>>, errors: Ref<ErrorsFromSchema<InferSchemaType<TSchema>>> };
+  
+// useFormulate('key', validationSchema, refToSyncDataWith, options)
+export function useFormulate<TSchema extends SchemaType>(
+    key: string,
+    schema: TSchema,
+    ref: Ref<InferSchemaType<TSchema> | undefined | null>,
+    options: FormulateOptions<TSchema>
+): { state: Ref<InferSchemaType<TSchema>>, errors: Ref<ErrorsFromSchema<InferSchemaType<TSchema>>> };
+  
+  
+// useFormulate(refToModelStateAndSyncDataWith, options)
+export function useFormulate<TSchema extends SchemaType>(
+    ref: Ref<InferSchemaType<TSchema> | undefined | null>,
     options?: FormulateOptions<TSchema>
-  ) {
-    let schema: TSchema;
+): { state: Ref<InferSchemaType<TSchema>>, errors: Ref<ErrorsFromSchema<InferSchemaType<TSchema>>> };
+  
+export function useFormulate<TSchema extends SchemaType>(
+    schemaOrKeyOrRef: string | TSchema | Ref<InferSchemaType<TSchema> | undefined | null>,
+    schemaOrOptionsOrRef?: TSchema | Ref<InferSchemaType<TSchema> | undefined | null> | FormulateOptions<TSchema>,
+    optionsOrRef?: Ref<InferSchemaType<TSchema> | undefined | null> | FormulateOptions<TSchema>,
+    options?: FormulateOptions<TSchema>
+): { 
+    state: Ref<InferSchemaType<TSchema>>, 
+    errors: Ref<ErrorsFromSchema<InferSchemaType<TSchema>>> 
+} {
+    validateApiUsage(schemaOrKeyOrRef, schemaOrOptionsOrRef, optionsOrRef, options);
+
+    let schema: TSchema | undefined;
     let externalRef: Ref<InferSchemaType<TSchema>> | undefined;
     let formOptions: FormulateOptions<TSchema> = {};
     
-    if (typeof schemaOrKey === 'string') {
-        const dataKey = schemaOrKey;
-        schema = schemaOrRefOrOptions as TSchema;
+    if (typeof schemaOrKeyOrRef === 'string') {
+        const dataKey = schemaOrKeyOrRef;
+        schema = schemaOrOptionsOrRef as TSchema;
         
-        if (refOrOptions && 'value' in refOrOptions) {
-            externalRef = refOrOptions as Ref<InferSchemaType<TSchema>>;
-            formOptions = options || {};
-        }
-        else {
-            formOptions = refOrOptions as FormulateOptions<TSchema> || {};
+        if (optionsOrRef && 'value' in optionsOrRef) {
+          externalRef = optionsOrRef as Ref<InferSchemaType<TSchema>>;
+          formOptions = options || {};
+        } else {
+          formOptions = optionsOrRef as FormulateOptions<TSchema> || {};
         }
         
         formOptions.key = dataKey;
-    }
-    else {
-        schema = schemaOrKey;
+      }
+      // Case 2: First parameter is a Ref (form state model)
+      else if (schemaOrKeyOrRef && typeof schemaOrKeyOrRef === 'object' && 'value' in schemaOrKeyOrRef) {
+        externalRef = schemaOrKeyOrRef as Ref<InferSchemaType<TSchema>>;
         
-        if (schemaOrRefOrOptions && 'value' in schemaOrRefOrOptions) {
-            externalRef = schemaOrRefOrOptions as Ref<InferSchemaType<TSchema>>;
-            formOptions = refOrOptions as FormulateOptions<TSchema> || {};
+        // Check if second parameter is options or schema
+        if (schemaOrOptionsOrRef && typeof schemaOrOptionsOrRef === 'object') {
+          if ('value' in schemaOrOptionsOrRef) {
+            // This doesn't make sense - we already have a ref as first param
+            // Just ignore this parameter
+          } else {
+            // Second parameter is either options or schema
+            // We'll treat it as options since we already have the state ref
+            formOptions = schemaOrOptionsOrRef as FormulateOptions<TSchema>;
+          }
         }
-        else {
-            formOptions = schemaOrRefOrOptions as FormulateOptions<TSchema> || {};
+        
+      }
+      // Case 3: First parameter is a regular schema object
+      else {
+        schema = schemaOrKeyOrRef as TSchema;
+        
+        if (schemaOrOptionsOrRef && 'value' in schemaOrOptionsOrRef) {
+          externalRef = schemaOrOptionsOrRef as Ref<InferSchemaType<TSchema>>;
+          formOptions = optionsOrRef as FormulateOptions<TSchema> || {};
+        } else {
+          formOptions = schemaOrOptionsOrRef as FormulateOptions<TSchema> || {};
         }
-    }
+      }
     
     const {
         defaults = {},
-        partialSchema,
+        // partialSchema,
         // validationDebounce = 350,
         key
     } = formOptions;
@@ -98,7 +162,16 @@ export function useFormulate<TSchema extends SchemaType>(
     type FormState = InferSchemaType<TSchema>;
     type FormErrors = ErrorsFromSchema<FormState>;
     
-    const defaultValues = createDefaultValues<FormState>(schema);
+    let defaultValues: FormState;
+    if (schema) {
+        defaultValues = createDefaultValues<FormState>(schema);
+    }
+    else {
+        defaultValues = (externalRef && externalRef.value) 
+        ? { ...externalRef.value } as FormState 
+        : {} as FormState;
+    }
+    
     const mergedInitialValues = (
         typeof defaultValues === 'object' && defaultValues !== null
           ? { ...defaultValues, ...defaults }
@@ -145,4 +218,62 @@ export function useFormulate<TSchema extends SchemaType>(
         state,
         errors
     };
+}
+
+
+
+
+/**
+ * Validates the API usage patterns and throws errors for invalid combinations
+ */
+function validateApiUsage<TSchema extends SchemaType>(
+    arg1: string | TSchema | Ref<InferSchemaType<TSchema> | undefined | null>,
+    arg2?: TSchema | Ref<InferSchemaType<TSchema> | undefined | null> | FormulateOptions<TSchema>,
+    arg3?: Ref<InferSchemaType<TSchema> | undefined | null> | FormulateOptions<TSchema>,
+    arg4?: FormulateOptions<TSchema>
+) {
+    const isString = typeof arg1 === 'string';
+    const isRef = arg1 && typeof arg1 === 'object' && 'value' in arg1;
+   
+    if (isRef) {
+        if (arg3 !== undefined || arg4 !== undefined) {
+            throw new Error('Invalid API usage: When providing a ref as first argument, only options object can be provided as second argument');
+        }
+        
+        if (arg2 && typeof arg2 === 'object' && 'value' in arg2) {
+            throw new Error('Invalid API usage: When providing a ref as first argument, second argument cannot be a ref');
+        }
+        
+        return;
+    }
+    
+    if (isString) {
+        if (!arg2) {
+            throw new Error('Invalid API usage: When using a string key as first argument, validation schema must be provided as second argument');
+        }
+        
+        if (typeof arg2 === 'object' && ('value' in arg2 || 'defaults' in arg2 || 'key' in arg2)) {
+            throw new Error('Invalid API usage: When using a string key as first argument, second argument must be a validation schema');
+        }
+        
+        if (arg3) {
+            const isArg3Ref = typeof arg3 === 'object' && 'value' in arg3;
+            
+            if (isArg3Ref && !arg4) {
+                throw new Error('Invalid API usage: When providing a ref as third argument with a key pattern, options must be provided as fourth argument');
+            }
+            
+            if (!isArg3Ref && arg4) {
+                throw new Error('Invalid API usage: Too many arguments provided');
+            }
+        }
+        
+        return;
+    }
+    
+    if (arg3 !== undefined || arg4 !== undefined) {
+        throw new Error('Invalid API usage: When providing a schema as first argument, only one additional argument is allowed (ref or options)');
+    }
+    
+    return;
 }
