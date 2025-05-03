@@ -16,8 +16,8 @@ const LoginSchema = v.object({
     password: v.pipe(v.string(), v.minLength(8)),
 });
 
-const TestSchema = z.object({
-    name: z.string().min(1, { message: 'Name is required' }),
+const TestSchema = z.interface({
+    name: z.number().min(1, { message: 'Name is required' }),
     age: z.number().min(18, { message: 'You must be at least 18 years old' }),
 });
 
@@ -25,8 +25,16 @@ const TestSchema = z.object({
 const {
     state,
     errors
-} = useFormulate(LoginSchema);
+} = useFormulate(LoginSchema, {
+    defaults: {
+        email: 0,
+        password: 0,
+    },
+});
 
+watch (state, (newValue) => {
+    console.log('state:', newValue);
+}, { deep: true, immediate: true });
 
 watch(errors, (newValue) => {
     console.log('stateLocal:', newValue);

@@ -2,13 +2,14 @@ import * as z from 'zod';
 
 
 export function createPartialSchema<T>(schema: any): any {
-    if (isStandardSchema(schema)) {
-      // TODO: Implement partial schema creation for StandardSchema
-      return schema;
-    }
-    
     if (schema instanceof z.ZodType) {
-      return createPartialZodSchema(schema);
+        return createPartialZodSchema(schema);
+    }
+
+    if (isStandardSchema(schema)) {
+        console.warn('StandardSchemaV1 is not yet supported for partial schema creation');
+        // TODO: Implement partial schema creation for StandardSchema
+        return schema;
     }
     
     return schema;

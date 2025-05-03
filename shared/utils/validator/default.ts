@@ -5,12 +5,15 @@ import { isStandardSchema } from '~~/shared/utils/schema'
 
 
 export function createDefaultValues<T>(schema: any): T {
-    if (isStandardSchema(schema)) {
-      return createDefaultValuesFromStandardSchema(schema);
-    }
-    
     if (schema instanceof z.ZodType) {
-      return createDefaultValuesFromZodSchema(schema);
+        console.log('Zod schema detected');
+
+        return createDefaultValuesFromZodSchema(schema);
+    }
+
+    if (isStandardSchema(schema)) {
+        console.warn('StandardSchemaV1 is not yet supported for default values');
+        return createDefaultValuesFromStandardSchema(schema);
     }
     
     return {} as T;
