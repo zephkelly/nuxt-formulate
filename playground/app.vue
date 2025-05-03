@@ -26,7 +26,7 @@ type MyTestRef = z.infer<typeof myTestRef>
 const {
     state,
     errors
-} = useFormulate<MyTestRef>(myTestRef)
+} = useFormulate<typeof myTestRef>(myTestRef)
 
 watch(state, (newState) => {
     console.log('State changed:', newState)
