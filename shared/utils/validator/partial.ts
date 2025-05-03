@@ -1,11 +1,24 @@
 import * as z from 'zod';
 
 
+export function createPartialSchema<T>(schema: any): any {
+    if (isStandardSchema(schema)) {
+      // TODO: Implement partial schema creation for StandardSchema
+      return schema;
+    }
+    
+    if (schema instanceof z.ZodType) {
+      return createPartialZodSchema(schema);
+    }
+    
+    return schema;
+}
+
 /**
  * Create a deeply partial version of a Zod schema
  * This works for objects, arrays, and interfaces
  */
-export function createPartialSchema<T extends z.ZodType>(schema: T): z.ZodType {
+export function createPartialZodSchema<T extends z.ZodType>(schema: T): z.ZodType {
     // -------------------------------------------------------------------------
     // Handle objects and interfaces
     // -------------------------------------------------------------------------
@@ -19,7 +32,6 @@ export function createPartialSchema<T extends z.ZodType>(schema: T): z.ZodType {
       
         for (const key in shape) {
             const fieldSchema = shape[key];
-            // Make each field optional and partial if it's an object
             if (
                 fieldSchema instanceof z.ZodObject ||
                 fieldSchema instanceof z.ZodInterface ||
