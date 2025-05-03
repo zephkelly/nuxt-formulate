@@ -1,6 +1,6 @@
 <template>
     <h1>Hello World</h1>
-    <input v-model="state.name" placeholder="Name" />
+    <input v-model="state.email" placeholder="Name" />
 
     {{ state }}
     {{ errors }}
@@ -8,26 +8,27 @@
 
 <script lang="ts" setup>
 import * as z from 'zod';
+import * as v from 'valibot'; 
+
+// Create login schema with email and password
+const LoginSchema = v.object({
+    email: v.pipe(v.string(), v.email()),
+    password: v.pipe(v.string(), v.minLength(8)),
+});
 
 const TestSchema = z.object({
     name: z.string().min(1, { message: 'Name is required' }),
     age: z.number().min(18, { message: 'You must be at least 18 years old' }),
 });
 
-const stateGlobal = useState<z.infer<typeof TestSchema> | undefined>('state-global-test', () => undefined);
 
 const {
     state,
     errors
-} = useFormulate('state-global-test', TestSchema);
+} = useFormulate(LoginSchema);
 
 
-watch(stateGlobal, (newValue) => {
-    console.log('stateGlobal:', newValue);
-}, { deep: true });
-
-
-watch(state, (newValue) => {
+watch(errors, (newValue) => {
     console.log('stateLocal:', newValue);
 }, { deep: true });
 </script>

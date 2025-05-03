@@ -1,10 +1,14 @@
 import * as z from 'zod';
 
-import { debounce } from '~/utils/debounce';
+import type { SchemaType, InferSchemaType, ErrorsFromSchema } from '~/shared/types/schema';
 
-import { createDefaultValuesFromZodSchema } from '../utils/validator/default';
-import { createPartialSchema } from '../utils/validator/partial';
-import { restructureZodErrors } from '~/utils/validator/flatten';
+
+import { debounce } from '~/shared/utils/debounce';
+
+import { createDefaultValues } from '~/shared/utils/validator/default';
+import { createPartialSchema } from '~/shared/utils/validator/partial';
+
+import { handleValidationErrors } from '~/shared/utils/validator/error';
 
 
 
@@ -20,32 +24,33 @@ import { restructureZodErrors } from '~/utils/validator/flatten';
 ///////////////////////////////////////////////////////////////////////////////
 
 
-type InferZodType<T extends z.ZodType> = z.infer<T>;
 
-type ErrorsFromSchema<T> = {
-    [K in keyof T]?: T[K] extends object ? ErrorsFromSchema<T[K]> : string;
-};
+// Define a union type that can be either a ZodType or a StandardSchema
+
+
+// Updated ErrorsFromSchema type
+
 
 /**
  * Options for the useFormulate hook
  */
-type FormulateOptions<TSchema extends z.ZodType> = {
+type FormulateOptions<TSchema extends SchemaType> = {
     /**
      * Initial state values to override defaults
      */
-    defaults?: Partial<InferZodType<TSchema>>;
-   
+    defaults?: Partial<InferSchemaType<TSchema>>;
+    
     /**
      * A partial schema to use for validation during form editing
      * If not provided, one will be created automatically
      */
-    partialSchema?: z.ZodType;
-   
+    partialSchema?: TSchema extends z.ZodType ? z.ZodType : TSchema;
+    
     /**
      * Validation debounce timing in milliseconds
      */
     validationDebounce?: number;
-
+  
     /**
      * Optional data key for persistence or identification
      * Used when the function is called with a string as the first argument
@@ -54,14 +59,14 @@ type FormulateOptions<TSchema extends z.ZodType> = {
 };
   
 
-export function useFormulate<TSchema extends z.ZodType>(
+export function useFormulate<TSchema extends SchemaType>(
     schemaOrKey: string | TSchema,
-    schemaOrRefOrOptions?: TSchema | Ref<InferZodType<TSchema> | undefined | null> | FormulateOptions<TSchema>,
-    refOrOptions?: Ref<InferZodType<TSchema>> | FormulateOptions<TSchema>,
+    schemaOrRefOrOptions?: TSchema | Ref<InferSchemaType<TSchema> | undefined | null> | FormulateOptions<TSchema>,
+    refOrOptions?: Ref<InferSchemaType<TSchema>> | FormulateOptions<TSchema>,
     options?: FormulateOptions<TSchema>
   ) {
     let schema: TSchema;
-    let externalRef: Ref<InferZodType<TSchema>> | undefined;
+    let externalRef: Ref<InferSchemaType<TSchema>> | undefined;
     let formOptions: FormulateOptions<TSchema> = {};
     
     // Function arguments are flexible for convenience
@@ -70,7 +75,7 @@ export function useFormulate<TSchema extends z.ZodType>(
         schema = schemaOrRefOrOptions as TSchema;
         
         if (refOrOptions && 'value' in refOrOptions) {
-            externalRef = refOrOptions as Ref<InferZodType<TSchema>>;
+            externalRef = refOrOptions as Ref<InferSchemaType<TSchema>>;
             formOptions = options || {};
         }
         else {
@@ -83,7 +88,7 @@ export function useFormulate<TSchema extends z.ZodType>(
         schema = schemaOrKey;
         
         if (schemaOrRefOrOptions && 'value' in schemaOrRefOrOptions) {
-            externalRef = schemaOrRefOrOptions as Ref<InferZodType<TSchema>>;
+            externalRef = schemaOrRefOrOptions as Ref<InferSchemaType<TSchema>>;
             formOptions = refOrOptions as FormulateOptions<TSchema> || {};
         }
         else {
@@ -92,27 +97,23 @@ export function useFormulate<TSchema extends z.ZodType>(
     }
     
     const {
+        //@ts-ignore
         defaults = {},
         partialSchema,
         validationDebounce = 350,
         key
     } = formOptions;
     
-    if (
-        schema instanceof z.core.$ZodObject &&
-        !(schema instanceof z.core.$ZodInterface) &&
-        !(schema instanceof z.core.$ZodArray)
-    ) {
-        console.warn('⚠️ useFormulate works best with z.interface() instead of z.object() for better performance and type safety.');
-    }
-    
     // Infer state and errors shape via schema
-    type FormState = InferZodType<TSchema>;
+    type FormState = InferSchemaType<TSchema>;
     type FormErrors = ErrorsFromSchema<FormState>;
     
-    // @ts-ignore
-    const defaultValues = createDefaultValuesFromZodSchema(schema);
-    const mergedInitialValues = { ...defaultValues, ...defaults };
+    const defaultValues = createDefaultValues<FormState>(schema);
+    const mergedInitialValues = (
+        typeof defaultValues === 'object' && defaultValues !== null
+          ? { ...defaultValues, ...defaults }
+          : defaults as unknown as FormState
+    );
     
     let state: Ref<FormState>;
     
@@ -140,9 +141,11 @@ export function useFormulate<TSchema extends z.ZodType>(
         state = useState<FormState>(key, () => mergedInitialValues as FormState);
     }
     else {
-        state = ref<FormState>(mergedInitialValues as FormState);
+        //@ts-expect-error
+        state = ref(mergedInitialValues) as Ref<FormState>;
     }
     
+    //@ts-ignore
     const errors = ref<FormErrors>({});
     const validationSchema = partialSchema || createPartialSchema(schema);
     const debouncedValidateState = debounce(validateState, validationDebounce);
@@ -151,20 +154,39 @@ export function useFormulate<TSchema extends z.ZodType>(
         debouncedValidateState();
     }, { deep: true });
     
-    function validateState() {
+    async function validateState() {
         try {
-            validationSchema.parse(state.value);
-            errors.value = {};
-            return null;
+            // Handle StandardSchema
+            if (isStandardSchema(validationSchema)) {
+                const result = validationSchema['~standard'].validate(state.value);
+                const finalResult = result instanceof Promise ? await result : result;
+                
+                if (finalResult.issues) {
+                errors.value = handleValidationErrors({ issues: finalResult.issues }) as FormErrors;
+                return { issues: finalResult.issues };
+                }
+                
+                errors.value = {};
+                return null;
+            } 
+
+            // Handle Zod schema
+            else if (validationSchema instanceof z.ZodType) {
+                validationSchema.parse(state.value);
+                errors.value = {};
+                return null;
+            } 
+            
+            // Handle unknown schema
+            else {
+                console.warn('Unknown schema type');
+                errors.value = {};
+                return null;
+            }
         }
         catch (error) {
-            if (error instanceof z.ZodError) {
-                const tree = z.treeifyError(error);
-                const flattenedErrors = restructureZodErrors(tree);
-                errors.value = flattenedErrors;
-                return error;
-            }
-            return null;
+            errors.value = handleValidationErrors(error) as FormErrors;
+            return error;
         }
     }
     

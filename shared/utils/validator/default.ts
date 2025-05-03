@@ -1,5 +1,25 @@
 import * as z from 'zod';
+import { type StandardSchemaV1 } from '~~/shared/types/standard-schema/v1';
+import { isStandardSchema } from '~~/shared/utils/schema'
 
+
+
+export function createDefaultValues<T>(schema: any): T {
+    if (isStandardSchema(schema)) {
+      return createDefaultValuesFromStandardSchema(schema);
+    }
+    
+    if (schema instanceof z.ZodType) {
+      return createDefaultValuesFromZodSchema(schema);
+    }
+    
+    return {} as T;
+}
+  
+function createDefaultValuesFromStandardSchema<T extends StandardSchemaV1>(schema: T): any {
+    // Perhaps need to inspect schema via reflection?
+    return {};
+}
 
 
 /**

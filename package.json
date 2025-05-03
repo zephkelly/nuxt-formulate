@@ -11,8 +11,17 @@
   },
   "dependencies": {
     "nuxt": "^3.17.1",
+    "valibot": "^1.0.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.1",
     "zod": "4.0.0-beta.20250430T185432"
+  },
+  "peerDependencies": {
+    "@zod/core": "^0.10.1"
+  },
+  "peerDependenciesMeta": {
+    "@zod/core": {
+      "optional": true
+    }
   }
 }
