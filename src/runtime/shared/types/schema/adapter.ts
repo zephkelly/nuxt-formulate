@@ -1,3 +1,5 @@
+export type AdapterType = 'zod' | 'valibot' | 'yup' | 'arktype' | 'standardSchema';
+
 export interface SchemaAdapter<T> {
     /**
      * Create default values based on schema

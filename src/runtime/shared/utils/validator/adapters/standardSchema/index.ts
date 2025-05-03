@@ -1,3 +1,5 @@
+import { registerAdapter } from '../../adapter-registry'
+
 import type { SchemaAdapter } from '../../../../types/schema/adapter';
 import type { StandardSchemaV1 } from '../../../../types/standard-schema/v1';
 
@@ -28,3 +30,7 @@ export const StandardSchemaAdapter: SchemaAdapter<StandardSchemaV1> = {
         return isStandardSchema(schema);
     }
 };
+
+export function register() {
+    registerAdapter('standardSchema', StandardSchemaAdapter)
+}

@@ -1,5 +1,9 @@
 export default defineNuxtConfig({
   modules: ['../src/module'],
-  myModule: {},
+  formulate: {
+    validators: [
+        'zod'
+    ],
+  },
   devtools: { enabled: true },
 })

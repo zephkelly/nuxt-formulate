@@ -1,3 +1,5 @@
+import { registerAdapter } from '../../adapter-registry';
+
 import type { SchemaAdapter } from "../../../../types/schema/adapter";
 
 import { createZodPartialSchema } from "./partial";
@@ -36,3 +38,13 @@ export const ZodAdapter: SchemaAdapter<any> = {
         return isZodSchema(schema);
     }
 };
+
+export function register() {
+    if (import.meta.dev) {
+        console.log(
+            '%c FORMULATE ', 'color: black; background-color: #0f8dcc; font-weight: bold; font-size: 1.15rem;',
+            '⚡ Registering standard schema adapter'
+        );
+    }
+    registerAdapter('zod', ZodAdapter);
+}

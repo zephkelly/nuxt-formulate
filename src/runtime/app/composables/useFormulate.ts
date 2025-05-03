@@ -1,10 +1,14 @@
 
-import { type Ref, watch } from 'vue';
+import { type Ref, ref, watch } from 'vue';
 import { useState } from 'nuxt/app';
+
 import type { SchemaType, InferSchemaType, ErrorsFromSchema } from './../../shared/types/schema';
 
-
-import { createDefaultValues, createPartialSchema, handleValidationErrors } from './../../shared/utils/validator';
+import {
+    createDefaultValues,
+    // createPartialSchema,
+    // handleValidationErrors
+} from './../../shared/utils/validator';
 
 
 
@@ -19,14 +23,6 @@ import { createDefaultValues, createPartialSchema, handleValidationErrors } from
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-
-
-
-// Define a union type that can be either a ZodType or a StandardSchema
-
-
-// Updated ErrorsFromSchema type
-
 
 /**
  * Options for the useFormulate hook
@@ -93,10 +89,9 @@ export function useFormulate<TSchema extends SchemaType>(
     }
     
     const {
-        //@ts-ignore
         defaults = {},
         partialSchema,
-        validationDebounce = 350,
+        // validationDebounce = 350,
         key
     } = formOptions;
     
@@ -135,19 +130,16 @@ export function useFormulate<TSchema extends SchemaType>(
         state = useState<FormState>(key, () => mergedInitialValues as FormState);
     }
     else {
-        //@ts-expect-error
         state = ref(mergedInitialValues) as Ref<FormState>;
     }
     
-    //@ts-ignore
     const errors = ref<FormErrors>({});
-    //@ts-ignore
-    const validationSchema = partialSchema || createPartialSchema(schema);
+
+    // const validationSchema = partialSchema || createPartialSchema(schema);
     
-    watch(() => state.value, () => {
-        // debouncedValidateState();
-        console.log('State changed:', state.value);
-    }, { deep: true });
+    // watch(() => state.value, () => {
+    //    debouncedValidateState();
+    // }, { deep: true });
     
     return {
         state,

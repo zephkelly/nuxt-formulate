@@ -1,20 +1,19 @@
-import type { SchemaAdapter } from '../../types/schema/adapter';
-import type { SchemaType } from '../../types/schema';
+import type { AdapterType, SchemaAdapter } from '../../types/schema/adapter';
 
 
 
-const schemaAdapters: SchemaAdapter<any>[] = [];
+const schemaAdapters = new Map<string, SchemaAdapter<any>>()
 
-export function registerAdapter<T>(adapter: SchemaAdapter<T>) {
-    schemaAdapters.push(adapter);
+export function registerAdapter<T>(name: AdapterType, adapter: SchemaAdapter<T>) {
+    schemaAdapters.set(name, adapter)
 }
 
-export function getAdapterForSchema(schema: SchemaType): SchemaAdapter<any> | null {
-    for (const adapter of schemaAdapters) {
+export function getAdapterForSchema(schema: any): SchemaAdapter<any> | null {
+    for (const adapter of schemaAdapters.values()) {
         if (adapter.isCompatible(schema)) {
-            return adapter;
+            return adapter
         }
     }
-    
-    return null;
+
+    return null
 }

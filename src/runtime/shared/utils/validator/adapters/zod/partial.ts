@@ -1,12 +1,14 @@
 import * as z from '@zod/core';
 
+
+
 /**
  * Create a deeply partial version of a Zod schema
  * This works for objects, arrays, and interfaces
  */
 export function createZodPartialSchema<T extends z.$ZodType>(schema: T): z.$ZodType {
     // -------------------------------------------------------------------------
-    // Handle objects and interfaces
+    // Handle interfaces
     // -------------------------------------------------------------------------
     if (
         schema instanceof z.$ZodInterface
