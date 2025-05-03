@@ -29,11 +29,13 @@ const {
 
 watch(state, (newState) => {
     console.log('State changed:', newState)
-}, { deep: true, immediate: true })
+}, { deep: true })
 
-watch(errors, (newErrors) => {
-    console.log('Errors changed:', newErrors)
-}, { deep: true, immediate: true })
+
+// No auto validation happening yet
+// watch(errors, (newErrors) => {
+//     console.log('Errors changed:', newErrors)
+// }, { deep: true })
 </script>
 
 <style lang="css">

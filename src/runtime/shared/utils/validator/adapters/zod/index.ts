@@ -40,10 +40,10 @@ export const ZodAdapter: SchemaAdapter<any> = {
 };
 
 export function register() {
-    if (import.meta.dev) {
+    if (import.meta.dev && import.meta.server) {
         console.log(
             '%c FORMULATE ', 'color: black; background-color: #0f8dcc; font-weight: bold; font-size: 1.15rem;',
-            '⚡ Registering standard schema adapter'
+            '⚡ Registering zod validator adapter'
         );
     }
     registerAdapter('zod', ZodAdapter);
