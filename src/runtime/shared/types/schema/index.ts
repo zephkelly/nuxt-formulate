@@ -1,6 +1,5 @@
-
 import * as z from 'zod';
-import type { StandardSchemaV1 } from '~~/shared/types/standard-schema/v1';
+import type { StandardSchemaV1 } from './../../types/standard-schema/v1';
 
 
 

@@ -1,5 +1,5 @@
 import { getAdapterForSchema } from './adapter-registry';
-import type { SchemaType } from '~~/shared/types/schema';
+import type { SchemaType } from '../../types/schema';
 
 
 

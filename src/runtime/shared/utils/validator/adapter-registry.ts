@@ -1,5 +1,5 @@
-import type { SchemaAdapter } from '~~/shared/types/schema/adapter';
-import type { SchemaType } from '~~/shared/types/schema';
+import type { SchemaAdapter } from '../../types/schema/adapter';
+import type { SchemaType } from '../../types/schema';
 
 
 

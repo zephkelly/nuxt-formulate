@@ -1,5 +1,5 @@
-import type { SchemaAdapter } from '~~/shared/types/schema/adapter';
-import type { StandardSchemaV1 } from '~~/shared/types/standard-schema/v1';
+import type { SchemaAdapter } from '../../../../types/schema/adapter';
+import type { StandardSchemaV1 } from '../../../../types/standard-schema/v1';
 
 import { createStandardSchemaPartialSchema } from './partial';
 import { createDefaultValuesFromStandardSchema } from './defaults';

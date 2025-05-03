@@ -1,4 +1,4 @@
-import type { SchemaAdapter } from "~~/shared/types/schema/adapter";
+import type { SchemaAdapter } from "../../../../types/schema/adapter";
 
 import { createZodPartialSchema } from "./partial";
 import { createZodSchemaDefaultValues } from "./defaults";
