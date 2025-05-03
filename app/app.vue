@@ -25,12 +25,7 @@ const TestSchema = z.interface({
 const {
     state,
     errors
-} = useFormulate(LoginSchema, {
-    defaults: {
-        email: 0,
-        password: 0,
-    },
-});
+} = useFormulate(TestSchema);
 
 watch (state, (newValue) => {
     console.log('state:', newValue);

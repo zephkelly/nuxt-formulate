@@ -3,12 +3,13 @@ import type { SchemaType } from '~~/shared/types/schema';
 
 
 
-export function createPartialSchema<T extends SchemaType>(schema: T): T {
+export function createDefaultValues<T>(schema: SchemaType): T {
     const adapter = getAdapterForSchema(schema);
     
     if (adapter) {
-        return adapter.createPartialSchema(schema);
+        return adapter.createDefaultValues(schema);
     }
     
-    return schema;
+    // Unknown schema type, return empty object
+    return {} as T;
 }

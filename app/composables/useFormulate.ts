@@ -1,14 +1,11 @@
-import * as z from 'zod';
+// import * as z from 'zod';
 
 import type { SchemaType, InferSchemaType, ErrorsFromSchema } from '~~/shared/types/schema';
 
 
 import { debounce } from '~~/shared/utils/debounce';
+import { createDefaultValues, createPartialSchema, handleValidationErrors } from '~~/shared/utils/validator';
 
-import { createDefaultValues } from '~~/shared/utils/validator/default';
-import { createPartialSchema } from '~~/shared/utils/validator/partial';
-
-import { handleValidationErrors } from '~~/shared/utils/validator/error';
 
 
 
@@ -44,7 +41,7 @@ type FormulateOptions<TSchema extends SchemaType> = {
      * A partial schema to use for validation during form editing
      * If not provided, one will be created automatically
      */
-    partialSchema?: TSchema extends z.ZodType ? z.ZodType : TSchema;
+    partialSchema?: Partial<InferSchemaType<TSchema>>;
     
     /**
      * Validation debounce timing in milliseconds
@@ -69,7 +66,6 @@ export function useFormulate<TSchema extends SchemaType>(
     let externalRef: Ref<InferSchemaType<TSchema>> | undefined;
     let formOptions: FormulateOptions<TSchema> = {};
     
-    // Function arguments are flexible for convenience
     if (typeof schemaOrKey === 'string') {
         const dataKey = schemaOrKey;
         schema = schemaOrRefOrOptions as TSchema;
@@ -104,7 +100,6 @@ export function useFormulate<TSchema extends SchemaType>(
         key
     } = formOptions;
     
-    // Infer state and errors shape via schema
     type FormState = InferSchemaType<TSchema>;
     type FormErrors = ErrorsFromSchema<FormState>;
     
@@ -124,7 +119,6 @@ export function useFormulate<TSchema extends SchemaType>(
 
         state = externalRef;
         
-        // Provide two way data binding with external useState ref/key
         if (key) {
             const persistentState = useState<FormState>(key, () => externalRef.value);
             
@@ -147,48 +141,13 @@ export function useFormulate<TSchema extends SchemaType>(
     
     //@ts-ignore
     const errors = ref<FormErrors>({});
+    //@ts-ignore
     const validationSchema = partialSchema || createPartialSchema(schema);
-    const debouncedValidateState = debounce(validateState, validationDebounce);
     
     watch(() => state.value, () => {
-        debouncedValidateState();
+        // debouncedValidateState();
+        console.log('State changed:', state.value);
     }, { deep: true });
-    
-    async function validateState() {
-        try {
-            // Handle StandardSchema
-            if (isStandardSchema(validationSchema)) {
-                const result = validationSchema['~standard'].validate(state.value);
-                const finalResult = result instanceof Promise ? await result : result;
-                
-                if (finalResult.issues) {
-                errors.value = handleValidationErrors({ issues: finalResult.issues }) as FormErrors;
-                return { issues: finalResult.issues };
-                }
-                
-                errors.value = {};
-                return null;
-            } 
-
-            // Handle Zod schema
-            else if (validationSchema instanceof z.ZodType) {
-                validationSchema.parse(state.value);
-                errors.value = {};
-                return null;
-            } 
-            
-            // Handle unknown schema
-            else {
-                console.warn('Unknown schema type');
-                errors.value = {};
-                return null;
-            }
-        }
-        catch (error) {
-            errors.value = handleValidationErrors(error) as FormErrors;
-            return error;
-        }
-    }
     
     return {
         state,

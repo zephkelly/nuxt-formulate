@@ -6,7 +6,7 @@ import type { SchemaType } from '~~/shared/types/schema';
 const schemaAdapters: SchemaAdapter<any>[] = [];
 
 export function registerAdapter<T>(adapter: SchemaAdapter<T>) {
-  schemaAdapters.push(adapter);
+    schemaAdapters.push(adapter);
 }
 
 export function getAdapterForSchema(schema: SchemaType): SchemaAdapter<any> | null {
