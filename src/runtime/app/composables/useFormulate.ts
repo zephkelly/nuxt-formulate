@@ -50,14 +50,15 @@ type FormulateOptions<TSchema extends SchemaType> = {
      */
     key?: string;
 };
-  
 
+
+// Implementation
 export function useFormulate<TSchema extends SchemaType>(
     schemaOrKey: string | TSchema,
     schemaOrRefOrOptions?: TSchema | Ref<InferSchemaType<TSchema> | undefined | null> | FormulateOptions<TSchema>,
     refOrOptions?: Ref<InferSchemaType<TSchema>> | FormulateOptions<TSchema>,
     options?: FormulateOptions<TSchema>
-  ) {
+) {
     let schema: TSchema;
     let externalRef: Ref<InferSchemaType<TSchema>> | undefined;
     let formOptions: FormulateOptions<TSchema> = {};
@@ -89,8 +90,9 @@ export function useFormulate<TSchema extends SchemaType>(
     }
     
     const {
+        //@ts-ignore
         defaults = {},
-        partialSchema,
+        // partialSchema,
         // validationDebounce = 350,
         key
     } = formOptions;
@@ -98,7 +100,16 @@ export function useFormulate<TSchema extends SchemaType>(
     type FormState = InferSchemaType<TSchema>;
     type FormErrors = ErrorsFromSchema<FormState>;
     
-    const defaultValues = createDefaultValues<FormState>(schema);
+    let defaultValues: FormState;
+    if (schema) {
+        defaultValues = createDefaultValues<FormState>(schema);
+    }
+    else {
+        defaultValues = (externalRef && externalRef.value) 
+        ? { ...externalRef.value } as FormState 
+        : {} as FormState;
+    }
+    
     const mergedInitialValues = (
         typeof defaultValues === 'object' && defaultValues !== null
           ? { ...defaultValues, ...defaults }
@@ -130,6 +141,7 @@ export function useFormulate<TSchema extends SchemaType>(
         state = useState<FormState>(key, () => mergedInitialValues as FormState);
     }
     else {
+        //@ts-ignore
         state = ref(mergedInitialValues) as Ref<FormState>;
     }
     

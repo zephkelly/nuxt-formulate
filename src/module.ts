@@ -43,25 +43,18 @@ export default defineNuxtModule<ModuleOptions>({
 
 function setupValidationAdapters(resolver: Resolver, _options: ModuleOptions): void {
     const requestedAdapters = _options.validators || []
-    const validAdapters: AdapterType[] = ['zod', 'valibot', 'yup', 'arktype']
+    const validAdapters: AdapterType[] = ['zod']
     
-    // Validate the requested adapters
     requestedAdapters.forEach((adapter) => {
         if (!validAdapters.includes(adapter as AdapterType)) {
             throw new Error(`Invalid adapter "${adapter}" provided. Valid adapters are: ${validAdapters.join(', ')}`)
         }
     })
 
-    if (!requestedAdapters.includes('standardSchema')) {
-        requestedAdapters.push('standardSchema')
-    }
-
-    // Create a virtual file that dynamically imports only the requested adapters
     addTemplate({
         filename: 'formulate-adapters.mjs',
         write: true,
         getContents: () => {
-            // Convert kebab-case adapter names to camelCase for valid JS variables
             const imports = requestedAdapters.map((adapter) => {
                 const adapterPath = resolver.resolve(`runtime/shared/utils/validator/adapters/${adapter}/index`)
                 const safeAdapterName = adapter.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())
