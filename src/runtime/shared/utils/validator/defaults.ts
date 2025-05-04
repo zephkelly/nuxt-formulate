@@ -1,16 +1,13 @@
-import { type Ref } from 'vue';
 import { getAdapterForSchema } from './adapter-registry';
-import type { SchemaType } from '../../types/schema';
 
 
 
-export function createDefaultValues<T>(schema: SchemaType | Ref<T>): T {
+export function createDefaultValues<T>(schema: any): T {
     const adapter = getAdapterForSchema(schema);
     
     if (adapter) {
         return adapter.createDefaultValues(schema);
     }
     
-    // Unknown schema type, return empty object
     return {} as T;
 }

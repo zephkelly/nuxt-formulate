@@ -1,5 +1,3 @@
-export type AdapterType = 'zod';
-
 export interface SchemaAdapter<T> {
     /**
      * Create default values based on schema
@@ -26,3 +24,5 @@ export interface SchemaAdapter<T> {
      */
     supportsVendor?(vendor: string): boolean;
 }
+
+export type AdapterType = 'zod'

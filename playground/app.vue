@@ -26,12 +26,12 @@
     <div class="container" style="display: flex; flex-direction: column; gap: 1rem;">
         <h1>Arktype Test</h1>
         <input
-            v-model="name"
+            v-model="arktypeState.name"
             placeholder="Name"
         />
 
         <p>
-            <span class="state">{{ name }}</span>
+            <span class="state">{{ arktypeState }}</span>
         </p>
     </div>
 </template>
@@ -70,7 +70,7 @@ const arktypeSchema = type({
 })
 
 const {
-    state: name,
+    state: arktypeState,
 } = useFormulate(arktypeSchema)
 
 </script>

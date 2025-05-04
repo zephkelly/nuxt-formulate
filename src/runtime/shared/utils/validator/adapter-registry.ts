@@ -1,4 +1,5 @@
-import type { AdapterType, SchemaAdapter } from '../../types/schema/adapter';
+import type { SchemaAdapter } from '../../types/schema/adapter';
+import type { AdapterType } from '../../types/schema/adapter';
 
 
 
@@ -9,9 +10,7 @@ export function registerAdapter<T>(name: AdapterType, adapter: SchemaAdapter<T>)
 }
 
 export function getAdapterForSchema(schema: any): SchemaAdapter<any> | null {
-    // First check if it's a standard schema
     if (schema && typeof schema === 'object' && schema['~standard']) {
-        // Find adapter that supports this standard schema vendor
         const vendor = schema['~standard'].vendor;
         for (const adapter of schemaAdapters.values()) {
             if (adapter.supportsVendor && adapter.supportsVendor(vendor)) {
@@ -20,7 +19,6 @@ export function getAdapterForSchema(schema: any): SchemaAdapter<any> | null {
         }
     }
     
-    // Fall back to feature detection for non-standard schemas
     for (const adapter of schemaAdapters.values()) {
         if (adapter.isCompatible(schema)) {
             return adapter;
