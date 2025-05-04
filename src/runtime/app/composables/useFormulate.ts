@@ -2,12 +2,10 @@
 import { type Ref, ref, watch } from 'vue';
 import { useState } from 'nuxt/app';
 
-import type { SchemaType, InferSchemaType, ErrorsFromSchema } from './../../shared/types/schema';
+import type { SchemaType, InferSchemaType } from './../../shared/types/schema';
 
 import {
     createDefaultValues,
-    // createPartialSchema,
-    // handleValidationErrors
 } from './../../shared/utils/validator';
 
 
@@ -51,8 +49,6 @@ type FormulateOptions<TSchema extends SchemaType> = {
     key?: string;
 };
 
-
-// Implementation
 export function useFormulate<TSchema extends SchemaType>(
     schemaOrKey: string | TSchema,
     schemaOrRefOrOptions?: TSchema | Ref<InferSchemaType<TSchema> | undefined | null> | FormulateOptions<TSchema>,
@@ -67,7 +63,7 @@ export function useFormulate<TSchema extends SchemaType>(
         const dataKey = schemaOrKey;
         schema = schemaOrRefOrOptions as TSchema;
         
-        if (refOrOptions && 'value' in refOrOptions) {
+        if (refOrOptions && typeof refOrOptions === 'object' && 'value' in refOrOptions) {
             externalRef = refOrOptions as Ref<InferSchemaType<TSchema>>;
             formOptions = options || {};
         }
@@ -80,7 +76,7 @@ export function useFormulate<TSchema extends SchemaType>(
     else {
         schema = schemaOrKey;
         
-        if (schemaOrRefOrOptions && 'value' in schemaOrRefOrOptions) {
+        if (schemaOrRefOrOptions && typeof schemaOrRefOrOptions === 'object' && 'value' in schemaOrRefOrOptions) {
             externalRef = schemaOrRefOrOptions as Ref<InferSchemaType<TSchema>>;
             formOptions = refOrOptions as FormulateOptions<TSchema> || {};
         }
@@ -92,13 +88,11 @@ export function useFormulate<TSchema extends SchemaType>(
     const {
         //@ts-ignore
         defaults = {},
-        // partialSchema,
-        // validationDebounce = 350,
+        partialSchema,
         key
     } = formOptions;
     
     type FormState = InferSchemaType<TSchema>;
-    type FormErrors = ErrorsFromSchema<FormState>;
     
     let defaultValues: FormState;
     if (schema) {
@@ -145,16 +139,7 @@ export function useFormulate<TSchema extends SchemaType>(
         state = ref(mergedInitialValues) as Ref<FormState>;
     }
     
-    const errors = ref<FormErrors>({});
-
-    // const validationSchema = partialSchema || createPartialSchema(schema);
-    
-    // watch(() => state.value, () => {
-    //    debouncedValidateState();
-    // }, { deep: true });
-    
     return {
         state,
-        errors
     };
 }

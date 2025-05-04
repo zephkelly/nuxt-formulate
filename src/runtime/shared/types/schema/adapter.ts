@@ -20,4 +20,9 @@ export interface SchemaAdapter<T> {
      * Check if a schema is of this adapter's type
      */
     isCompatible(schema: any): boolean;
+
+    /**
+     * Check if the adapter supports a specific vendor
+     */
+    supportsVendor?(vendor: string): boolean;
 }
