@@ -40,11 +40,7 @@
 import * as z from 'zod'
 
 const zodSchema = z.interface({
-    name: z.string().min(1, 'Name is required').default('poop'),
-    
-    literal1: z.literal('poop'),
-    literal2: z.literal(['poop', 'scoop']),
-
+    name: z.string().min(1, 'Name is required'),
     string: z.string(),
 })
 
