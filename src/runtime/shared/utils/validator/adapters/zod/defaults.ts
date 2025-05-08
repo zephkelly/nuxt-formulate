@@ -3,40 +3,133 @@ import * as z from "@zod/core"
 
 
 /**
- * Populates default undefined values for a given Zod schema
+ * Recursively populates default undefined values for a given Zod schema,
+ * but breaking all schemas down to their base types.
  * 
  * @param schema The Zod schema to create default values for
  * @returns An object with default values for the schema
  */
 export function createZodSchemaDefaultValues(schema: z.$ZodType): any {
-    // -------------------------------------------------------------------------
-    // Handle primitives
-    // -------------------------------------------------------------------------
-    if (schema instanceof z.$ZodArray) {
+    const schemaTraitsSet = schema._zod.traits
+
+    // instanceof checks must traverse entire prototype chain: O(n).
+    // Set ensure O(1) lookup time.
+    if (schemaTraitsSet.has('$ZodInterface')) {
+        return createZodInterfaceExplicitDefaultValues(schema);
+    }
+    
+    if (schemaTraitsSet.has('$ZodArray')) {
+        return createZodArrayExplicitUndefinedDefaultValues(schema);
+    }
+
+    if (schemaTraitsSet.has('$ZodType')) {
+        return createZodTypeUndefinedDefaultValues(schema);
+    }
+
+}
+
+
+
+// -----------------------------------------------------------------------------
+// Helper functions
+// -----------------------------------------------------------------------------
+
+// $ZodType
+function createZodTypeUndefinedDefaultValues(schema: z.$ZodType): any {
+    return undefined;
+}
+
+function createZodTypeSensibleDefaultValues(schema: z.$ZodType): any {
+    return undefined;
+}
+
+
+
+// $ZodArray
+// Returns:   { field: undefined }
+function createZodArrayExplicitUndefinedDefaultValues(schema: z.$ZodType): any {
+    if (schema._zod &&
+        schema._zod.def &&
+        //@ts-expect-error
+        schema._zod.def.element &&
+        //@ts-expect-error
+        schema._zod.def.element.def &&
+        //@ts-expect-error
+        schema._zod.def.element.def.shape
+    ) {
+        //@ts-expect-error
+        const arraySchemaShape = schema._zod.def.element.def.shape;
+
+        const defaults: Record<string, any> = {};
+    
+        for (const key in arraySchemaShape) {
+            defaults[key] = createZodSchemaDefaultValues(arraySchemaShape[key]);
+        }
+
+        return [ defaults ];
+    }
+
+    // Fallback to implicit undefined
+    return [{}];
+}
+
+// Returns:   [ { } ]
+function createZodArrayImplicitUndefinedDefaultValues(schema: z.$ZodType, defaultCount: number = 0): any {
+    if (defaultCount <= 0) {
         return [];
     }
-   
-    // -------------------------------------------------------------------------
-    // Handle interfaces and deprecated objects
-    // -------------------------------------------------------------------------
-    if (schema instanceof z.$ZodInterface) {
-        //@ts-ignore
-        const shape = schema.def.shape;
+
+    let defaults: any[] = [];
+    for (let i = 0; i < defaultCount; i++) {
+        defaults.push(createZodSchemaDefaultValues(schema));
+    }
+
+    // Fallback to implicit undefined
+    return undefined;
+}
+
+
+
+// $ZodInterface
+function createZodInterfaceExplicitDefaultValues(schema: z.$ZodType): any {
+    if (schema._zod &&
+        schema._zod.def &&
+        //@ts-expect-error
+        schema._zod.def.shape
+    ) {
+        //@ts-expect-error
+        const interfaceSchemaShape = schema._zod.def.shape;
+
         const defaults: Record<string, any> = {};
-        
-        for (const key in shape) {
-            defaults[key] = createZodSchemaDefaultValues(shape[key]);
+    
+        for (const key in interfaceSchemaShape) {
+            defaults[key] = createZodSchemaDefaultValues(interfaceSchemaShape[key]);
         }
-        
+
         return defaults;
     }
 
-    // -------------------------------------------------------------------------
-    // Embracing Zod 4 beta, no point in supporting deprecated objects
-    // -------------------------------------------------------------------------
-    if (schema instanceof z.$ZodObject) {
-        throw new Error('⚠️ z.object() is not supported, please use z.interface() instead');
+    // Fallback to implicit undefined
+    return undefined;
+}
+
+function createZodInterfaceImplicitDefaultValues(schema: z.$ZodType): any {
+    if (schema._zod &&
+        schema._zod.def &&
+        //@ts-expect-error
+        schema._zod.def.shape
+    ) {
+        //@ts-expect-error
+        const interfaceSchemaShape = schema._zod.def.shape;
+
+        const defaults: Record<string, any> = {};
+    
+        for (const key in interfaceSchemaShape) {
+            defaults[key] = createZodSchemaDefaultValues(interfaceSchemaShape[key]);
+        }
+
+        return defaults;
     }
-   
+
     return undefined;
 }
