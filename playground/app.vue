@@ -2,12 +2,11 @@
     <div class="container" style="display: flex; flex-direction: column; gap: 1rem;">
         <h1>Zod Test</h1>
         <input
-            v-model="zodState.name"
             placeholder="Name"
         />
 
         <p>
-            <span class="state">{{ zodState }}</span>
+            <span class="state"></span>
         </p>
     </div>
 
@@ -41,15 +40,26 @@
 import * as z from 'zod'
 
 const zodSchema = z.interface({
-    name: z.number().min(1, 'Name is required'),
-    age: z.number().min(18, 'You must be at least 18 years old')
+    string: z.string(),
+    number: z.number(),
+    int: z.int(),
+    boolean: z.boolean(),
+    date: z.date(),
+    bigint: z.bigint(),
+    array: z.array(z.string()),
+    array2: z.array(z.interface({
+        name: z.string(),
+        age: z.number().int().positive()
+    })),
 })
+
 const {
     state: zodState,
-} = useFormulate(zodSchema)
+} = useFormulate(z.array(zodSchema))
 
 
-// Valibot testing
+
+// // Valibot testing
 import * as v from 'valibot'
 
 const valibotSchema = v.object({
@@ -59,6 +69,7 @@ const valibotSchema = v.object({
 const {
     state: valibotState,
 } = useFormulate(valibotSchema)
+
 
 
 // Arktype testing
