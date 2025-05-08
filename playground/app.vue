@@ -10,7 +10,7 @@
         </p>
     </div>
 
-    <!-- <div class="container" style="display: flex; flex-direction: column; gap: 1rem;">
+    <div class="container" style="display: flex; flex-direction: column; gap: 1rem;">
         <h1>Valibot Test</h1>
         <input
             v-model="valibotState.name"
@@ -32,7 +32,7 @@
         <p>
             <span class="state">{{ arktypeState }}</span>
         </p>
-    </div> -->
+    </div>
 </template>
 
 <script lang="ts" setup>
@@ -52,45 +52,32 @@ const {
     // }]
 })
 
-// const {
-//     state: zodStateArray,
-// } = useFormulate(zodSchema, {
-//     defaults: {
-//         name: 0,
-//         age: 0
-//     }
-// })
-
-// watch(zodState, (newState) => {
-//     console.log('Zod state changed:', newState)
-// }, { deep: true })
-
 
 
 // // Valibot testing
-// import * as v from 'valibot'
+import * as v from 'valibot'
 
-// const valibotSchema = v.object({
-//     name: v.pipe(v.string(), v.minLength(1)),
-//     age: v.pipe(v.number(), v.minValue(18))
-// });
-// const {
-//     state: valibotState,
-// } = useFormulate(valibotSchema)
+const valibotSchema = v.object({
+    name: v.pipe(v.string(), v.minLength(1)),
+    age: v.pipe(v.number(), v.minValue(18))
+});
+const {
+    state: valibotState,
+} = useFormulate(valibotSchema)
 
 
 
-// // Arktype testing
-// import { type } from "arktype"
+// Arktype testing
+import { type } from "arktype"
 
-// const arktypeSchema = type({
-// 	name: "string > 1",
-//     age: "number > 18",
-// })
+const arktypeSchema = type({
+	name: "string > 1",
+    age: "number > 18",
+})
 
-// const {
-//     state: arktypeState,
-// } = useFormulate(arktypeSchema)
+const {
+    state: arktypeState,
+} = useFormulate(arktypeSchema)
 
 </script>
 
