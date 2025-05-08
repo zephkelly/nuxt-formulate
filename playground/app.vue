@@ -44,6 +44,8 @@ const zodSchema = z.interface({
     
     literal1: z.literal('poop'),
     literal2: z.literal(['poop', 'scoop']),
+
+    string: z.string(),
 })
 
 const {

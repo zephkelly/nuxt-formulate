@@ -11,25 +11,28 @@ import * as z from "@zod/core"
  */
 export function createZodSchemaDefaultValues(schema: z.$ZodType): any {
     // move to schema._zod.def.type for checking
-    const schemaTraitsSet = schema._zod.traits
-
+    const schemaType = schema._zod.def.type;
+    
     // instanceof checks must traverse entire prototype chain: O(n).
     // Set ensure O(1) lookup time.
-    if (schemaTraitsSet.has('$ZodInterface')) {
+    if (schemaType === 'interface') {
         return handleZodInterface(schema);
     }
     
-    if (schemaTraitsSet.has('$ZodArray')) {
+    if (schemaType === 'array') {
         return handleZodArray(schema);
     }
-
-    if (schemaTraitsSet.has('$ZodType')) {
+    
+    // We can be reasonably sure that this is a $ZodType from here out,
+    // but better safe than sorry.
+    const schemaTraits = schema._zod.traits;
+    if (schemaTraits.has('$ZodType')) {
         return createZodTypeSchemaDefaultValues(schema);
     }
 
     // Technically, $ZodInterface functions should be able to process
     // $ZodObject schemas, but we want to encourage Zod 4 beta adoption
-    if (schemaTraitsSet.has('$ZodObject')) {
+    if (schemaTraits.has('$ZodObject')) {
         throw new Error('⚠️ z.object() is deprecated, please use z.interface() instead to define your schemas');
     }
 
