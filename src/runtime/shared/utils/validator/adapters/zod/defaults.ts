@@ -9,13 +9,21 @@ import * as z from "@zod/core"
  * @param schema The Zod schema to create default values for
  * @returns An object with default values for the schema
  */
-export function createZodSchemaDefaultValues(schema: z.$ZodType): any {
-    // move to schema._zod.def.type for checking
-    const schemaType = schema._zod.def.type;
+export function createZodSchemaDefaultValues(schema: z.$ZodAny): any {
+    // This determines the type of schema we are dealing with
+    let schemaType: z.$ZodTypeDef['type'] = 'unknown';
+    if (schema._zod && schema._zod.def) {
+        schemaType = schema._zod.def.type;
+    }
+    //@ts-expect-error
+    else if (schema.type) {
+        // @ts-expect-error
+        schemaType = schema.type;
+    }
     
-    // instanceof checks must traverse entire prototype chain: O(n).
-    // Set ensure O(1) lookup time.
+
     if (schemaType === 'interface') {
+        //@ts-ignore - We know the type is an interface
         return handleZodInterface(schema);
     }
     
@@ -23,22 +31,11 @@ export function createZodSchemaDefaultValues(schema: z.$ZodType): any {
         return handleZodArray(schema);
     }
     
-    // We can be reasonably sure that this is a $ZodType from here out,
-    // but better safe than sorry.
-    const schemaTraits = schema._zod.traits;
-    if (schemaTraits.has('$ZodType')) {
-        return createZodTypeSchemaDefaultValue(schema);
-    }
 
-    // Technically, $ZodInterface functions should be able to process
-    // $ZodObject schemas, but we want to encourage Zod 4 beta adoption
-    if (schemaTraits.has('$ZodObject')) {
-        throw new Error('⚠️ z.object() is deprecated, please use z.interface() instead to define your schemas');
-    }
+    // -- Will handle other Zod types here --
 
 
-    // We couldn't identify the schema type
-    return undefined;
+    return createZodTypeSchemaDefaultValue(schema);
 }
 
 
@@ -54,10 +51,10 @@ function createZodTypeSchemaDefaultValue(schema: z.$ZodType): any {
 
     // If the user defined a default for this field, use it
     if (schema._zod.def &&
-        //@ts-expect-error
+        //@ts-ignore
         schema._zod.def.defaultValue
     ) {
-        // @ts-expect-error
+        // @ts-ignore
         return schema._zod.def.defaultValue();
     }
 
@@ -169,19 +166,18 @@ function createZodTypeSensibleDefaultValue(fieldDefinition: z.$ZodTypeDef): any 
 function handleZodArray(schema: z.$ZodType): any {
     const zodArray = schema as z.$ZodArray<any>;
 
+    if (!zodArray._zod || !zodArray._zod.def ||
+        !zodArray._zod.def.element || !zodArray._zod.def.element.def) {
+        throw new Error('⚠️ Zod array schema is missing _zod or _zod.def. Are you sure this is a Zod schema? If so please create an issue on Formulate\'s GitHub.');
+    }
+
+    const internalZodArrayElementDefinition = zodArray._zod.def.element.def;
+
+
     // If the array contains a schema, we can send that back through the default
     // value function to recursively populate the default values
-    if (schema._zod &&
-        schema._zod.def &&
-        //@ts-expect-error
-        schema._zod.def.element &&
-        //@ts-expect-error
-        schema._zod.def.element.def &&
-        //@ts-expect-error
-        schema._zod.def.element.def.shape
-    ) {
-        //@ts-expect-error
-        const arraySchemaShape = schema._zod.def.element.def.shape;
+    if (internalZodArrayElementDefinition.shape) {
+        const arraySchemaShape = internalZodArrayElementDefinition.shape;
 
         const defaults: Record<string, any> = {};
     
@@ -195,17 +191,8 @@ function handleZodArray(schema: z.$ZodType): any {
 
     // The array contains a primitive type, so we can pass it through the
     // $ZodType default value function to get the default value
-    if (schema._zod &&
-        schema._zod.def &&
-        //@ts-expect-error
-        schema._zod.def.element &&
-        //@ts-expect-error
-        schema._zod.def.element.def &&
-        //@ts-expect-error
-        schema._zod.def.element.def.type
-    ) {
-        //@ts-expect-error
-        return [createZodTypeSchemaDefaultValue(schema._zod.def.element.def)];
+    if (internalZodArrayElementDefinition.type) {
+        return [createZodSchemaDefaultValues(internalZodArrayElementDefinition)];
     }
 
     // Fallback to empty array
@@ -214,13 +201,11 @@ function handleZodArray(schema: z.$ZodType): any {
 
 
 // $ZodInterface
-function handleZodInterface(schema: z.$ZodType): any {
+function handleZodInterface(schema: z.$ZodInterface): any {
     if (schema._zod &&
         schema._zod.def &&
-        //@ts-expect-error
         schema._zod.def.shape
     ) {
-        //@ts-expect-error
         const interfaceSchemaShape = schema._zod.def.shape;
 
         const defaults: Record<string, any> = {};

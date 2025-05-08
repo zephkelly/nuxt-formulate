@@ -55,12 +55,7 @@ const zodSchema = z.interface({
 
 const {
     state: zodState,
-} = useFormulate(z.array(zodSchema), {
-    // defaults: [{
-    //     name: 0,
-    //     age: 0
-    // }]
-})
+} = useFormulate(z.array(zodSchema))
 
 
 
