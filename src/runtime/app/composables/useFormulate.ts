@@ -98,6 +98,7 @@ export function useFormulate<TSchema extends SchemaType>(
     let defaultValues: FormState;
     if (schema) {
         defaultValues = createDefaultValues<FormState>(schema);
+        console.log('defaultValues', defaultValues);
     }
     else {
         defaultValues = (externalRef && externalRef.value) 

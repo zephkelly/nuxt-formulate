@@ -10,20 +10,21 @@ import * as z from "@zod/core"
  * @returns An object with default values for the schema
  */
 export function createZodSchemaDefaultValues(schema: z.$ZodType): any {
+    // move to schema._zod.def.type for checking
     const schemaTraitsSet = schema._zod.traits
 
     // instanceof checks must traverse entire prototype chain: O(n).
     // Set ensure O(1) lookup time.
     if (schemaTraitsSet.has('$ZodInterface')) {
-        return createZodInterfaceExplicitDefaultValues(schema);
+        return handleZodInterface(schema);
     }
     
     if (schemaTraitsSet.has('$ZodArray')) {
-        return createZodArrayExplicitUndefinedDefaultValues(schema);
+        return handleZodArray(schema);
     }
 
     if (schemaTraitsSet.has('$ZodType')) {
-        return createZodTypeUndefinedDefaultValues(schema);
+        return createZodTypeSchemaDefaultValues(schema);
     }
 
     // Technically, $ZodInterface functions should be able to process
@@ -44,19 +45,35 @@ export function createZodSchemaDefaultValues(schema: z.$ZodType): any {
 // -----------------------------------------------------------------------------
 
 // $ZodType
-function createZodTypeUndefinedDefaultValues(schema: z.$ZodType): any {
-    return undefined;
-}
+function createZodTypeSchemaDefaultValues(schema: z.$ZodType): any {
+    if (!schema._zod) return undefined;
 
-function createZodTypeSensibleDefaultValues(schema: z.$ZodType): any {
+
+    // If the user defined a default for this field, use it
+    if (schema._zod.def &&
+        //@ts-expect-error
+        schema._zod.def.defaultValue
+    ) {
+        // @ts-expect-error
+        return schema._zod.def.defaultValue();
+    }
+
+
+    // If the field is a primitive type with only one valid
+    // value, use that value
+    if (schema._zod.values &&
+        schema._zod.values.size === 1
+    ) {
+        return schema._zod.values.values().next().value;
+    }
+
     return undefined;
 }
 
 
 
 // $ZodArray
-// Returns:   { field: undefined }
-function createZodArrayExplicitUndefinedDefaultValues(schema: z.$ZodType): any {
+function handleZodArray(schema: z.$ZodType): any {
     if (schema._zod &&
         schema._zod.def &&
         //@ts-expect-error
@@ -78,51 +95,13 @@ function createZodArrayExplicitUndefinedDefaultValues(schema: z.$ZodType): any {
         return [ defaults ];
     }
 
-    // Fallback to implicit undefined
+    // Fallback to implicit undefined single item array
     return [{}];
 }
 
-// Returns:   [ { } ]
-function createZodArrayImplicitUndefinedDefaultValues(schema: z.$ZodType, defaultCount: number = 0): any {
-    if (defaultCount <= 0) {
-        return [];
-    }
-
-    let defaults: any[] = [];
-    for (let i = 0; i < defaultCount; i++) {
-        defaults.push(createZodSchemaDefaultValues(schema));
-    }
-
-    // Fallback to implicit undefined
-    return undefined;
-}
-
-
 
 // $ZodInterface
-function createZodInterfaceExplicitDefaultValues(schema: z.$ZodType): any {
-    if (schema._zod &&
-        schema._zod.def &&
-        //@ts-expect-error
-        schema._zod.def.shape
-    ) {
-        //@ts-expect-error
-        const interfaceSchemaShape = schema._zod.def.shape;
-
-        const defaults: Record<string, any> = {};
-    
-        for (const key in interfaceSchemaShape) {
-            defaults[key] = createZodSchemaDefaultValues(interfaceSchemaShape[key]);
-        }
-
-        return defaults;
-    }
-
-    // Fallback to implicit undefined
-    return undefined;
-}
-
-function createZodInterfaceImplicitDefaultValues(schema: z.$ZodType): any {
+function handleZodInterface(schema: z.$ZodType): any {
     if (schema._zod &&
         schema._zod.def &&
         //@ts-expect-error
