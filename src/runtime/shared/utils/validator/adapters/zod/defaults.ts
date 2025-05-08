@@ -26,6 +26,15 @@ export function createZodSchemaDefaultValues(schema: z.$ZodType): any {
         return createZodTypeUndefinedDefaultValues(schema);
     }
 
+    // Technically, $ZodInterface functions should be able to process
+    // $ZodObject schemas, but we want to encourage Zod 4 beta adoption
+    if (schemaTraitsSet.has('$ZodObject')) {
+        throw new Error('⚠️ z.object() is deprecated, please use z.interface() instead to define your schemas');
+    }
+
+
+    // We couldn't identify the schema type
+    return undefined;
 }
 
 
