@@ -6,7 +6,7 @@
         />
 
         <p>
-            <span class="state">{{ zodState }}</span>
+            <span class="state"></span>
         </p>
     </div>
 
@@ -40,8 +40,17 @@
 import * as z from 'zod'
 
 const zodSchema = z.interface({
-    name: z.string().min(1, 'Name is required'),
     string: z.string(),
+    number: z.number(),
+    int: z.int(),
+    boolean: z.boolean(),
+    date: z.date(),
+    bigint: z.bigint(),
+    array: z.array(z.string()),
+    array2: z.array(z.interface({
+        name: z.string(),
+        age: z.number().int().positive()
+    })),
 })
 
 const {
