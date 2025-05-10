@@ -1,5 +1,5 @@
 import type { DefaultValueGenerationOptions } from '../../types/defaults';
-
+import type { SchemaType, InferSchemaType } from '../../types/schema';
 
 
 export interface SchemaAdapter<T> {
@@ -8,22 +8,22 @@ export interface SchemaAdapter<T> {
      * @param schema The schema to create default values for
      * @param options Options for controlling default value generation
      */
-    createDefaultValues(schema: T, options?: DefaultValueGenerationOptions): any;
+    createDefaultValues(schema: SchemaType, options?: DefaultValueGenerationOptions): any;
     
     /**
      * Create a partial version of the schema for validation during editing
      */
-    createPartialSchema(schema: T): T;
+    createPartialSchema(schema: SchemaType): T;
 
     /**
      * Handle validation errors and return a consistent format
      */
-    handleValidate(state: any): T | any;
+    handleValidate(schema: SchemaType, state: InferSchemaType<SchemaType>): T | any;
 
     /**
      * Handle validation errors and return a consistent format
      */
-    handleValidationErrors(state: any): any;
+    handleValidationErrors(state: InferSchemaType<SchemaType>): any;
     
 
     // Used in the adapter registry
@@ -31,7 +31,7 @@ export interface SchemaAdapter<T> {
     /**
      * Check if a schema is of this adapter's type
      */
-    isCompatible(schema: any): boolean;
+    isCompatible(schema: SchemaType): boolean;
 
     /**
      * Check if the adapter supports a specific vendor

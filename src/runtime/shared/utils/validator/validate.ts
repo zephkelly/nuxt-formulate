@@ -1,14 +1,14 @@
 import { getAdapterForSchema } from './adapter-registry';
-import type { SchemaType } from '../../types/schema';
+import type { SchemaType, InferSchemaType } from '../../types/schema';
 
 
 
-export function handleValidate<T extends SchemaType>(schema: T): T {
+export function handleValidate<T extends SchemaType>(schema: SchemaType, state: InferSchemaType<SchemaType>) {
     const adapter = getAdapterForSchema(schema);
     
     if (adapter) {
-        return adapter.handleValidate(schema);
+        return adapter.handleValidate(schema, state);
     }
     
-    return schema;
+    throw new Error('No adapter found for schema');
 }

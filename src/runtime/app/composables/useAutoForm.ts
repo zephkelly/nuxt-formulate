@@ -5,7 +5,7 @@ import { useState } from 'nuxt/app';
 import type { SchemaType, InferSchemaType } from '../../shared/types/schema';
 
 import { mergeWithGlobalOptions } from '../../shared/utils/options';
-import { createDefaultValues, createPartialSchema } from '../../shared/utils/validator';
+import { createDefaultValues, createPartialSchema, handleValidate } from '../../shared/utils/validator';
 import type { DefaultValueGenerationOptions } from '../../shared/types/defaults';
 
 
@@ -219,7 +219,9 @@ export function useAutoForm<TSchema extends SchemaType>(
     const mergedPartialSchema = schemas?.partial || createPartialFromSchema(schema);
 
     watch(state, (newValue) => {
-        
+        const hello = handleValidate(schema, newValue);
+
+        console.log('hello there::::', hello);
     }, { deep: true });
 
     return {

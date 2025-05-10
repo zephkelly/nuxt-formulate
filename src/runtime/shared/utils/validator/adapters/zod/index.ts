@@ -8,6 +8,7 @@ import { createZodSchemaDefaultValues } from "./defaults";
 import { handleZodSchemaValidationErrors } from "./errors";
 
 import type { DefaultValueGenerationOptions } from '../../../../types/defaults';
+import { handleZodValidate } from './validate';
 
 
 /*
@@ -29,21 +30,15 @@ export const ZodAdapter: SchemaAdapter<any> = {
     },
     
     createPartialSchema(schema) {
-        return createZodPartialSchema(schema);
+        return createZodPartialSchema(schema as z.$ZodAny);
     },
 
-    handleValidate(state) {
-        const { schema, data } = state;
-        try {
-            return schema.parse(data);
-        }
-        catch (error: unknown) {
-            if (error instanceof z.$ZodError) {
-                return handleZodSchemaValidationErrors(error);
-            }
+    handleValidate(schema: z.$ZodAny, state: z.infer<z.$ZodAny> ) {
+        return handleZodValidate(schema, state);
+    },
 
-            throw error;
-        }
+    handleValidationErrors(error: z.$ZodError) {
+        return handleZodSchemaValidationErrors(error);
     },
     
     isCompatible(schema) {

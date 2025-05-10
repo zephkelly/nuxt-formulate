@@ -2,11 +2,17 @@
     <div class="container" style="display: flex; flex-direction: column; gap: 1rem;">
         <h1>Zod Test</h1>
         <input
+            v-model="zodState.string"
+            placeholder="Name"
+        />
+
+        <input
+            v-model="zodState.number"
             placeholder="Name"
         />
 
         <p>
-            <span class="state">{{  }}</span>
+            <span class="state">{{ zodState }}</span>
         </p>
     </div>
 </template>
@@ -21,11 +27,6 @@ const zodSchema = z.interface({
     array: z.array(z.string()),
 })
 
-const partialZodSchema = zodSchema.partial()
-
-console.log('Zod schema:', zodSchema)
-console.log('Partial Zod schema:', partialZodSchema)
-
 const {
     state: zodState,
 } = useAutoForm(zodSchema, {
@@ -33,7 +34,13 @@ const {
 })
 
 watch(zodState, (state) => {
-    console.log('zod state:', state)
+
+    // try {
+    //     zodSchema.parse(state)
+    // } catch (e) {
+    //     console.error('zod error app.vue:', e)
+    // }
+
 }, { deep: true, immediate: true })
 </script>
 
