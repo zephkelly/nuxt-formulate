@@ -28,7 +28,9 @@ console.log('Partial Zod schema:', partialZodSchema)
 
 const {
     state: zodState,
-} = useAutoForm(zodSchema)
+} = useAutoForm(zodSchema, {
+    
+})
 
 watch(zodState, (state) => {
     console.log('zod state:', state)

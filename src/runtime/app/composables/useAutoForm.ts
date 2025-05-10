@@ -218,7 +218,10 @@ export function useAutoForm<TSchema extends SchemaType>(
     // -- Partial schema handling
     const mergedPartialSchema = schemas?.partial || createPartialFromSchema(schema);
 
-    
+    watch(state, (newValue) => {
+        
+    }, { deep: true });
+
     return {
         state,
     };

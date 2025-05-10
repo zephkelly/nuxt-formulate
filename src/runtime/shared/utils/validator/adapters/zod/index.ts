@@ -31,9 +31,19 @@ export const ZodAdapter: SchemaAdapter<any> = {
     createPartialSchema(schema) {
         return createZodPartialSchema(schema);
     },
-    
-    handleValidationErrors(error) {
-        return handleZodSchemaValidationErrors(error);
+
+    handleValidate(state) {
+        const { schema, data } = state;
+        try {
+            return schema.parse(data);
+        }
+        catch (error: unknown) {
+            if (error instanceof z.$ZodError) {
+                return handleZodSchemaValidationErrors(error);
+            }
+
+            throw error;
+        }
     },
     
     isCompatible(schema) {

@@ -14,11 +14,19 @@ export interface SchemaAdapter<T> {
      * Create a partial version of the schema for validation during editing
      */
     createPartialSchema(schema: T): T;
-    
+
     /**
-     * Convert validation errors to a consistent format
+     * Handle validation errors and return a consistent format
      */
-    handleValidationErrors(error: any): Record<string, any>;
+    handleValidate(state: any): T | any;
+
+    /**
+     * Handle validation errors and return a consistent format
+     */
+    handleValidationErrors(state: any): any;
+    
+
+    // Used in the adapter registry
     
     /**
      * Check if a schema is of this adapter's type
