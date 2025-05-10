@@ -27,6 +27,12 @@ import type { DefaultValueGenerationOptions } from '../../shared/types/defaults'
  */
 export type FormulateOptions<TSchema extends SchemaType> = {
     /**
+     * Optional data key for persistence or identification
+     * Used when the function is called with a string as the first argument
+     */
+    key?: string;
+
+    /**
      * Initial state values to override defaults
      */
     defaults?: Partial<InferSchemaType<TSchema>>;
@@ -35,18 +41,17 @@ export type FormulateOptions<TSchema extends SchemaType> = {
      * Options for controlling default value generation behavior
      */
     defaultValueOptions?: DefaultValueGenerationOptions;
-    
+
     /**
-     * A partial schema to use for validation during form editing
-     * If not provided, one will be created automatically
+     * Schema options for different validation scenarios
      */
-    partialSchema?: Partial<InferSchemaType<TSchema>>;
-  
-    /**
-     * Optional data key for persistence or identification
-     * Used when the function is called with a string as the first argument
-     */
-    key?: string;
+    schemas?: {
+        /**
+         * A partial schema to use for validation during form editing
+         * If not provided, fallback to partialSchema or auto-generated one
+         */
+        partial?: Partial<InferSchemaType<TSchema>>;
+    };
 };
 
 
@@ -145,8 +150,8 @@ function createInitialState<TSchema extends SchemaType>(
 
 function createPartialFromSchema<TSchema extends SchemaType>(schema: TSchema) {
     if (schema) {
-        const mergedPartialSchema = createPartialSchema(schema);
-        return mergedPartialSchema;
+        const newPartialSchema = createPartialSchema(schema);
+        return newPartialSchema;
     }
     
     return {} as Partial<InferSchemaType<TSchema>>;
@@ -160,6 +165,7 @@ export function useAutoForm<TSchema extends SchemaType>(
     refOrOptions?: Ref<InferSchemaType<TSchema>> | FormulateOptions<TSchema>,
     options?: FormulateOptions<TSchema>
 ) {
+    // -- Option handling
     const { schema, externalRef, options: formOptions } = normaliseFormulateParams(
         schemaOrKey,
         schemaOrRefOrOptions,
@@ -168,10 +174,12 @@ export function useAutoForm<TSchema extends SchemaType>(
     );
     
     const {
+        key,
+
         defaults,
         defaultValueOptions,
-        partialSchema,
-        key
+
+        schemas,
     } = formOptions;
     
     type FormState = InferSchemaType<TSchema>;
@@ -183,11 +191,12 @@ export function useAutoForm<TSchema extends SchemaType>(
         defaultValueOptions
     );
 
-    const mergedPartialSchema = partialSchema || createPartialSchema(schema);
+    
 
+    // -- State handling
     let state: Ref<FormState>;
     
-    // -- External ref provided - use it directly
+    // External ref provided - use directly
     if (externalRef) {
         if (Object.keys(externalRef.value || {}).length === 0) {
             externalRef.value = mergedInitialValues as FormState;
@@ -195,14 +204,20 @@ export function useAutoForm<TSchema extends SchemaType>(
         
         state = externalRef;
     } 
-    // -- Key provided without external ref - use useState
+    // Key provided - use useState
     else if (key) {
         state = useState<FormState>(key, () => mergedInitialValues as FormState);
     } 
-    // -- No key, no external ref - use local ref
+    // No key, no external ref - use local ref
     else {
         state = ref(mergedInitialValues) as Ref<FormState>;
     }
+    
+    
+
+    // -- Partial schema handling
+    const mergedPartialSchema = schemas?.partial || createPartialFromSchema(schema);
+
     
     return {
         state,
