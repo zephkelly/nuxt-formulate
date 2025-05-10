@@ -33,7 +33,7 @@ export default defineNuxtModule<ModuleOptions>({
             filename: 'formulate-options.mjs',
             getContents: () => `
 export default ${JSON.stringify(_options)}
-            `,
+`,
         })
 
         setupValidationAdapters(resolver, _options)

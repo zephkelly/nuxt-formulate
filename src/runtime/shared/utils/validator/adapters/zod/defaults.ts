@@ -1,5 +1,7 @@
 import * as z from "@zod/core"
 
+import type { DefaultValueGenerationOptions } from "../../../../types/defaults";
+
 
 
 /**
@@ -9,7 +11,10 @@ import * as z from "@zod/core"
  * @param schema The Zod schema to create default values for
  * @returns An object with default values for the schema
  */
-export function createZodSchemaDefaultValues(schema: z.$ZodAny): any {
+export function createZodSchemaDefaultValues(
+    schema: z.$ZodAny,
+    options?: DefaultValueGenerationOptions
+): any {
     // This determines the type of schema we are dealing with
     let schemaType: z.$ZodTypeDef['type'] = 'unknown';
     if (schema._zod && schema._zod.def) {
@@ -24,18 +29,19 @@ export function createZodSchemaDefaultValues(schema: z.$ZodAny): any {
 
     if (schemaType === 'interface') {
         //@ts-ignore - We know the type is an interface
-        return handleZodInterface(schema);
+        return handleZodInterface(schema as z.$ZodInterface, options);
     }
     
     if (schemaType === 'array') {
-        return handleZodArray(schema);
+        //@ts-ignore - We know the type is an array
+        return handleZodArray(schema as z.$ZodArray, options);
     }
     
 
     // -- Will handle other Zod types here --
 
 
-    return createZodTypeSchemaDefaultValue(schema);
+    return createZodTypeSchemaDefaultValue(schema, options);
 }
 
 
@@ -45,29 +51,49 @@ export function createZodSchemaDefaultValues(schema: z.$ZodAny): any {
 // -----------------------------------------------------------------------------
 
 // $ZodType
-function createZodTypeSchemaDefaultValue(schema: z.$ZodType): any {
-    if (!schema._zod) return undefined;
+function createZodTypeSchemaDefaultValue(schema: z.$ZodType, options?: DefaultValueGenerationOptions): any {
+    const { primitives = 'sensible' } = options || {};
 
+    if (primitives === 'undefined') {
+        return undefined;
+    }
+    else if (primitives === 'null') {
+        return null;
+    }
+    else if (primitives === 'sensible') {
+        if (!schema._zod) return undefined;
+    
+    
+        // If the user defined a default for this field, use it
+        if (schema._zod.def &&
+            //@ts-ignore
+            schema._zod.def.defaultValue
+        ) {
+            // @ts-ignore
+            return schema._zod.def.defaultValue();
+        }
+    
+    
+        // If the field is a primitive type with only one valid
+        // value, use that value
+        if (schema._zod.values &&
+            schema._zod.values.size === 1
+        ) {
+            const primitiveValue = schema._zod.values.values().next().value;
 
-    // If the user defined a default for this field, use it
-    if (schema._zod.def &&
-        //@ts-ignore
-        schema._zod.def.defaultValue
-    ) {
-        // @ts-ignore
-        return schema._zod.def.defaultValue();
+            //if the value is not null or undefined, then this is a literal
+            // we should have special handling for literal values in the default
+            // options
+
+            return schema._zod.values.values().next().value;
+        }
+
+        return createZodTypeSensibleDefaultValue(schema._zod.def)
     }
 
 
-    // If the field is a primitive type with only one valid
-    // value, use that value
-    if (schema._zod.values &&
-        schema._zod.values.size === 1
-    ) {
-        return schema._zod.values.values().next().value;
-    }
-
-    // return createZodTypeSensibleDefaultValue(schema._zod.def)
+    
+    
 
     return undefined;
 }
@@ -163,45 +189,78 @@ function createZodTypeSensibleDefaultValue(fieldDefinition: z.$ZodTypeDef): any 
 
 
 // $ZodArray
-function handleZodArray(schema: z.$ZodType): any {
-    const zodArray = schema as z.$ZodArray<any>;
+function handleZodArray(schema: z.$ZodArray, options?: DefaultValueGenerationOptions): any {
+    const { arrays = 'empty' } = options || {};
+    
+    if (typeof arrays === 'string') {
+        if (arrays === 'empty') return [];
+        if (arrays === 'undefined') return undefined;
+        if (arrays === 'null') return null;
+        if (arrays === 'populate') {
+            return generateSensibleArrayItems(schema, options, 1);
+        }
+    }
+    
+    if (typeof arrays === 'object' && arrays !== null && 'method' in arrays) {
+        const method = arrays.method;
+        const length = arrays.length !== undefined ? arrays.length : 1;
+        
+        if (method === 'undefined') {
+            return Array(length).fill(undefined);
+        }
+        
+        if (method === 'null') {
+            return Array(length).fill(null);
+        }
+        
+        if (method === 'empty') {
+            return [];
+        }
+        
+        if (method === 'populate') {
+            return generateSensibleArrayItems(schema, options, length);
+        }
+    }
+    
+    return [];
+}
 
+function generateSensibleArrayItems(schema: z.$ZodArray, options?: DefaultValueGenerationOptions, length: number = 1): any[] {
+    const zodArray = schema as z.$ZodArray<any>;
+    
     if (!zodArray._zod || !zodArray._zod.def ||
         !zodArray._zod.def.element || !zodArray._zod.def.element.def) {
         throw new Error('⚠️ Zod array schema is missing _zod or _zod.def. Are you sure this is a Zod schema? If so please create an issue on Formulate\'s GitHub.');
     }
-
-    const internalZodArrayElementDefinition = zodArray._zod.def.element.def;
-
-
-    // If the array contains a schema, we can send that back through the default
-    // value function to recursively populate the default values
-    if (internalZodArrayElementDefinition.shape) {
-        const arraySchemaShape = internalZodArrayElementDefinition.shape;
-
-        const defaults: Record<string, any> = {};
     
-        for (const key in arraySchemaShape) {
-            defaults[key] = createZodSchemaDefaultValues(arraySchemaShape[key]);
+    const internalZodArrayElementDefinition = zodArray._zod.def.element.def;
+    const result: any[] = [];
+    
+    for (let i = 0; i < length; i++) {
+        if (internalZodArrayElementDefinition.shape) {
+            const arraySchemaShape = internalZodArrayElementDefinition.shape;
+            const defaults: Record<string, any> = {};
+            
+            for (const key in arraySchemaShape) {
+                defaults[key] = createZodSchemaDefaultValues(arraySchemaShape[key], options);
+            }
+            
+            result.push(defaults);
         }
-
-        return [ defaults ];
+        else if (internalZodArrayElementDefinition.type) {
+            result.push(createZodSchemaDefaultValues(zodArray._zod.def.element, options));
+        }
+        else {
+            result.push(undefined);
+        }
     }
-
-
-    // The array contains a primitive type, so we can pass it through the
-    // $ZodType default value function to get the default value
-    if (internalZodArrayElementDefinition.type) {
-        return [createZodSchemaDefaultValues(internalZodArrayElementDefinition)];
-    }
-
-    // Fallback to empty array
-    return [];
+    
+    return result;
 }
 
 
 // $ZodInterface
-function handleZodInterface(schema: z.$ZodInterface): any {
+function handleZodInterface(schema: z.$ZodInterface, options?: DefaultValueGenerationOptions): any {
     if (schema._zod &&
         schema._zod.def &&
         schema._zod.def.shape
@@ -211,7 +270,7 @@ function handleZodInterface(schema: z.$ZodInterface): any {
         const defaults: Record<string, any> = {};
     
         for (const key in interfaceSchemaShape) {
-            defaults[key] = createZodSchemaDefaultValues(interfaceSchemaShape[key]);
+            defaults[key] = createZodSchemaDefaultValues(interfaceSchemaShape[key], options);
         }
 
         return defaults;

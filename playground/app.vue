@@ -6,11 +6,11 @@
         />
 
         <p>
-            <span class="state"></span>
+            <span class="state">{{  }}</span>
         </p>
     </div>
 
-    <div class="container" style="display: flex; flex-direction: column; gap: 1rem;">
+    <!-- <div class="container" style="display: flex; flex-direction: column; gap: 1rem;">
         <h1>Valibot Test</h1>
         <input
             v-model="valibotState.name"
@@ -32,7 +32,7 @@
         <p>
             <span class="state">{{ arktypeState }}</span>
         </p>
-    </div>
+    </div> -->
 </template>
 
 <script lang="ts" setup>
@@ -55,34 +55,46 @@ const zodSchema = z.interface({
 
 const {
     state: zodState,
-} = useFormulate(z.array(zodSchema))
-
-
-
-// // Valibot testing
-import * as v from 'valibot'
-
-const valibotSchema = v.object({
-    name: v.pipe(v.string(), v.minLength(1)),
-    age: v.pipe(v.number(), v.minValue(18))
-});
-const {
-    state: valibotState,
-} = useFormulate(valibotSchema)
-
-
-
-// Arktype testing
-import { type } from "arktype"
-
-const arktypeSchema = type({
-	name: "string > 1",
-    age: "number > 18",
+} = useAutoForm(z.array(zodSchema), {
+    autoDefaults: {
+        primitives: 'null',
+        arrays: {
+            method: 'undefined',
+            length: 3,
+        },
+    }
 })
 
-const {
-    state: arktypeState,
-} = useFormulate(arktypeSchema)
+watch(zodState, (state) => {
+    console.log('Zod state:', state)
+}, { deep: true, immediate: true })
+
+
+
+// // // Valibot testing
+// import * as v from 'valibot'
+
+// const valibotSchema = v.object({
+//     name: v.pipe(v.string(), v.minLength(1)),
+//     age: v.pipe(v.number(), v.minValue(18))
+// });
+// const {
+//     state: valibotState,
+// } = useFormulate(valibotSchema)
+
+
+
+// // Arktype testing
+// import { type } from "arktype"
+
+// const arktypeSchema = type({
+// 	name: "string > 1",
+//     age: "number > 18",
+// })
+
+// const {
+//     state: arktypeState,
+// } = useFormulate(arktypeSchema)
 
 </script>
 

@@ -1,8 +1,14 @@
+import type { DefaultValueGenerationOptions } from '../../types/defaults';
+
+
+
 export interface SchemaAdapter<T> {
     /**
      * Create default values based on schema
+     * @param schema The schema to create default values for
+     * @param options Options for controlling default value generation
      */
-    createDefaultValues(schema: T): any;
+    createDefaultValues(schema: T, options?: DefaultValueGenerationOptions): any;
     
     /**
      * Create a partial version of the schema for validation during editing

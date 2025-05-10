@@ -1,3 +1,4 @@
+import * as z from '@zod/core';
 import { registerAdapter } from '../../adapter-registry';
 
 import type { SchemaAdapter } from "../../../../types/schema/adapter";
@@ -6,6 +7,7 @@ import { createZodPartialSchema } from "./partial";
 import { createZodSchemaDefaultValues } from "./defaults";
 import { handleZodSchemaValidationErrors } from "./errors";
 
+import type { DefaultValueGenerationOptions } from '../../../../types/defaults';
 
 
 /*
@@ -22,8 +24,8 @@ export function isZodSchema(schema: any): boolean {
 
 
 export const ZodAdapter: SchemaAdapter<any> = {
-    createDefaultValues(schema) {
-        return createZodSchemaDefaultValues(schema);
+    createDefaultValues(schema: z.$ZodAny, options?: DefaultValueGenerationOptions): any {
+        return createZodSchemaDefaultValues(schema, options);
     },
     
     createPartialSchema(schema) {
