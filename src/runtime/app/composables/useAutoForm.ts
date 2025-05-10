@@ -4,9 +4,9 @@ import { useState } from 'nuxt/app';
 
 import type { SchemaType, InferSchemaType } from '../../shared/types/schema';
 
+import { mergeWithGlobalOptions } from '../../shared/utils/options';
 import { createDefaultValues } from '../../shared/utils/validator';
 import type { DefaultValueGenerationOptions } from '../../shared/types/defaults';
-
 
 
  ///////////////////////////////////////////////////////////////////////////////
@@ -34,7 +34,7 @@ export type FormulateOptions<TSchema extends SchemaType> = {
     /**
      * Options for controlling default value generation behavior
      */
-    autoDefaults?: DefaultValueGenerationOptions;
+    defaultValueOptions?: DefaultValueGenerationOptions;
     
     /**
      * A partial schema to use for validation during form editing
@@ -110,15 +110,18 @@ function createInitialState<TSchema extends SchemaType>(
     schema: TSchema,
     externalRef?: Ref<InferSchemaType<TSchema>>,
     defaults: Partial<InferSchemaType<TSchema>> = {},
-    defaultsOptions?: DefaultValueGenerationOptions
+    defaultValueOptions?: DefaultValueGenerationOptions
 ): InferSchemaType<TSchema> {
     type FormState = InferSchemaType<TSchema>;
    
     let defaultValues: FormState;
    
     if (schema) {
-        defaultValues = createDefaultValues<FormState>(schema, defaultsOptions);
-    } else {
+        const mergedDefaultValueOptions = mergeWithGlobalOptions(defaultValueOptions);
+
+        defaultValues = createDefaultValues<FormState>(schema, mergedDefaultValueOptions);
+    }
+    else {
         defaultValues = (externalRef && externalRef.value)
             ? { ...externalRef.value } as FormState
             : {} as FormState;
@@ -156,7 +159,7 @@ export function useAutoForm<TSchema extends SchemaType>(
     
     const {
         defaults,
-        autoDefaults,
+        defaultValueOptions,
         partialSchema,
         key
     } = formOptions;
@@ -167,7 +170,7 @@ export function useAutoForm<TSchema extends SchemaType>(
         schema, 
         externalRef, 
         defaults, 
-        autoDefaults
+        defaultValueOptions
     );
 
     let state: Ref<FormState>;

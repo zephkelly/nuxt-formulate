@@ -4,6 +4,9 @@ export default defineNuxtConfig({
         validators: [
             "zod"
         ],
+        defaultValueOptions: {
+            arrays: 'populate',
+        }
     },
     devtools: { enabled: true },
 })
