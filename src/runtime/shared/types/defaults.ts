@@ -12,7 +12,7 @@ export type DefaultValueGenerationOptions = {
      */
     arrays?: 'empty' | 'undefined' | 'null' | 'populate' | {
         method: 'empty' | 'undefined' | 'null' | 'populate';
-        length: number;
+        length?: number;
 
         depth?: {
             max?: number;

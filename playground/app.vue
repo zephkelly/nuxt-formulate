@@ -23,14 +23,14 @@ const zodSchema = z.interface({
     date: z.date(),
     bigint: z.bigint(),
     array: z.array(z.string()),
-    array2: z.array(z.interface({
+    object: z.interface({
         name: z.string(),
         age: z.number().int().positive(),
-        nestedObject: z.interface({
+        nestedArray: z.array(z.interface({
             name: z.string(),
             age: z.number().int().positive()
-        })
-    })),
+        }))
+    }),
 })
 
 const {

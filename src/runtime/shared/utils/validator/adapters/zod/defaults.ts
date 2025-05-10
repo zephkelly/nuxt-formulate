@@ -13,7 +13,8 @@ import type { DefaultValueGenerationOptions } from "../../../../types/defaults";
  */
 export function createZodSchemaDefaultValues(
     schema: z.$ZodAny,
-    options?: DefaultValueGenerationOptions
+    options?: DefaultValueGenerationOptions,
+    currentDepth: number = 0
 ): any {
     // This determines the type of schema we are dealing with
     let schemaType: z.$ZodTypeDef['type'] = 'unknown';
@@ -29,12 +30,12 @@ export function createZodSchemaDefaultValues(
 
     if (schemaType === 'interface') {
         //@ts-ignore - We know the type is an interface
-        return handleZodInterface(schema as z.$ZodInterface, options);
+        return handleZodInterface(schema as z.$ZodInterface, options, currentDepth);
     }
     
     if (schemaType === 'array') {
         //@ts-ignore - We know the type is an array
-        return handleZodArray(schema as z.$ZodArray, options);
+        return handleZodArray(schema as z.$ZodArray, options, currentDepth);
     }
     
 
@@ -189,15 +190,53 @@ function createZodTypeSensibleDefaultValue(fieldDefinition: z.$ZodTypeDef): any 
 
 
 // $ZodArray
-function handleZodArray(schema: z.$ZodArray, options?: DefaultValueGenerationOptions): any {
+function handleZodArray(
+    schema: z.$ZodArray, 
+    options?: DefaultValueGenerationOptions,
+    currentDepth: number = 0  // Track current depth
+): any {
     const { arrays = 'empty' } = options || {};
+
+    console.log(`Handling array at depth ${currentDepth}`);
     
+    // Check depth configuration
+    const depthConfig = typeof arrays === 'object' && arrays !== null && 'depth' in arrays 
+        ? arrays.depth 
+        : undefined;
+    
+    // If depth config exists
+    if (depthConfig) {
+        const fallback = depthConfig.fallback || 'empty';
+        let shouldUseFallback = false;
+        
+        // CASE 1: Using max depth
+        if (depthConfig.max !== undefined) {
+            // Use fallback if we're at or beyond max depth
+            shouldUseFallback = currentDepth >= depthConfig.max;
+        }
+        // CASE 2: Using explicit layers
+        else if (depthConfig.layers !== undefined && depthConfig.layers.length > 0) {
+            // Use fallback if current depth is NOT in the layers array
+            shouldUseFallback = !depthConfig.layers.includes(currentDepth);
+        }
+        
+        // Apply fallback if determined by either max or layers logic
+        if (shouldUseFallback) {
+            if (fallback === 'empty') return [];
+            if (fallback === 'undefined') return undefined;
+            if (fallback === 'null') return null;
+            // If fallback is 'populate', we'll continue with normal array processing
+        }
+    }
+    
+    // Normal array processing based on the arrays option
     if (typeof arrays === 'string') {
         if (arrays === 'empty') return [];
         if (arrays === 'undefined') return undefined;
         if (arrays === 'null') return null;
         if (arrays === 'populate') {
-            return generateSensibleArrayItems(schema, options, 1);
+            // Increment depth when generating array items
+            return generateSensibleArrayItems(schema, options, 1, currentDepth + 1);
         }
     }
     
@@ -218,14 +257,20 @@ function handleZodArray(schema: z.$ZodArray, options?: DefaultValueGenerationOpt
         }
         
         if (method === 'populate') {
-            return generateSensibleArrayItems(schema, options, length);
+            // Increment depth when generating array items
+            return generateSensibleArrayItems(schema, options, length, currentDepth + 1);
         }
     }
     
     return [];
 }
 
-function generateSensibleArrayItems(schema: z.$ZodArray, options?: DefaultValueGenerationOptions, length: number = 1): any[] {
+function generateSensibleArrayItems(
+    schema: z.$ZodArray,
+    options?: DefaultValueGenerationOptions,
+    length: number = 1,
+    currentDepth: number = 0
+): any[] {
     const zodArray = schema as z.$ZodArray<any>;
     
     if (!zodArray._zod || !zodArray._zod.def ||
@@ -242,13 +287,21 @@ function generateSensibleArrayItems(schema: z.$ZodArray, options?: DefaultValueG
             const defaults: Record<string, any> = {};
             
             for (const key in arraySchemaShape) {
-                defaults[key] = createZodSchemaDefaultValues(arraySchemaShape[key], options);
+                defaults[key] = createZodSchemaDefaultValues(
+                    arraySchemaShape[key], 
+                    options, 
+                    currentDepth
+                );
             }
             
             result.push(defaults);
         }
         else if (internalZodArrayElementDefinition.type) {
-            result.push(createZodSchemaDefaultValues(zodArray._zod.def.element, options));
+            result.push(createZodSchemaDefaultValues(
+                zodArray._zod.def.element, 
+                options, 
+                currentDepth
+            ));
         }
         else {
             result.push(undefined);
@@ -260,7 +313,11 @@ function generateSensibleArrayItems(schema: z.$ZodArray, options?: DefaultValueG
 
 
 // $ZodInterface
-function handleZodInterface(schema: z.$ZodInterface, options?: DefaultValueGenerationOptions): any {
+function handleZodInterface(
+    schema: z.$ZodInterface,
+    options?: DefaultValueGenerationOptions,
+    currentDepth: number = 0
+): any {
     if (schema._zod &&
         schema._zod.def &&
         schema._zod.def.shape
@@ -270,7 +327,11 @@ function handleZodInterface(schema: z.$ZodInterface, options?: DefaultValueGener
         const defaults: Record<string, any> = {};
     
         for (const key in interfaceSchemaShape) {
-            defaults[key] = createZodSchemaDefaultValues(interfaceSchemaShape[key], options);
+            defaults[key] = createZodSchemaDefaultValues(
+                interfaceSchemaShape[key],
+                options,
+                currentDepth + 1
+            );
         }
 
         return defaults;
