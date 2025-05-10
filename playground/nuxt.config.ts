@@ -5,11 +5,11 @@ export default defineNuxtConfig({
             "zod"
         ],
         defaultValueOptions: {
+            primitives: 'undefined',
             arrays: {
                 method: 'populate',
                 depth: {
-                    layers: [0, 2],
-                    fallback: 'empty'
+                    max: 1,
                 }
             }
         }

@@ -16,7 +16,6 @@ export function createZodSchemaDefaultValues(
     options?: DefaultValueGenerationOptions,
     currentDepth: number = 0
 ): any {
-    // This determines the type of schema we are dealing with
     let schemaType: z.$ZodTypeDef['type'] = 'unknown';
     if (schema._zod && schema._zod.def) {
         schemaType = schema._zod.def.type;
@@ -193,49 +192,37 @@ function createZodTypeSensibleDefaultValue(fieldDefinition: z.$ZodTypeDef): any 
 function handleZodArray(
     schema: z.$ZodArray, 
     options?: DefaultValueGenerationOptions,
-    currentDepth: number = 0  // Track current depth
+    currentDepth: number = 0
 ): any {
     const { arrays = 'empty' } = options || {};
 
-    console.log(`Handling array at depth ${currentDepth}`);
-    
-    // Check depth configuration
     const depthConfig = typeof arrays === 'object' && arrays !== null && 'depth' in arrays 
         ? arrays.depth 
         : undefined;
     
-    // If depth config exists
     if (depthConfig) {
         const fallback = depthConfig.fallback || 'empty';
         let shouldUseFallback = false;
         
-        // CASE 1: Using max depth
         if (depthConfig.max !== undefined) {
-            // Use fallback if we're at or beyond max depth
             shouldUseFallback = currentDepth >= depthConfig.max;
         }
-        // CASE 2: Using explicit layers
         else if (depthConfig.layers !== undefined && depthConfig.layers.length > 0) {
-            // Use fallback if current depth is NOT in the layers array
             shouldUseFallback = !depthConfig.layers.includes(currentDepth);
         }
         
-        // Apply fallback if determined by either max or layers logic
         if (shouldUseFallback) {
             if (fallback === 'empty') return [];
             if (fallback === 'undefined') return undefined;
             if (fallback === 'null') return null;
-            // If fallback is 'populate', we'll continue with normal array processing
         }
     }
     
-    // Normal array processing based on the arrays option
     if (typeof arrays === 'string') {
         if (arrays === 'empty') return [];
         if (arrays === 'undefined') return undefined;
         if (arrays === 'null') return null;
         if (arrays === 'populate') {
-            // Increment depth when generating array items
             return generateSensibleArrayItems(schema, options, 1, currentDepth + 1);
         }
     }
@@ -257,7 +244,6 @@ function handleZodArray(
         }
         
         if (method === 'populate') {
-            // Increment depth when generating array items
             return generateSensibleArrayItems(schema, options, length, currentDepth + 1);
         }
     }

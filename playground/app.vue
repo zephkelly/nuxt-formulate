@@ -18,27 +18,20 @@ import * as z from 'zod'
 const zodSchema = z.interface({
     string: z.string(),
     number: z.number(),
-    int: z.literal([1, 2]),
-    boolean: z.boolean(),
-    date: z.date(),
-    bigint: z.bigint(),
     array: z.array(z.string()),
-    object: z.interface({
-        name: z.string(),
-        age: z.number().int().positive(),
-        nestedArray: z.array(z.interface({
-            name: z.string(),
-            age: z.number().int().positive()
-        }))
-    }),
 })
+
+const partialZodSchema = zodSchema.partial()
+
+console.log('Zod schema:', zodSchema)
+console.log('Partial Zod schema:', partialZodSchema)
 
 const {
     state: zodState,
-} = useAutoForm(z.array(zodSchema))
+} = useAutoForm(zodSchema)
 
 watch(zodState, (state) => {
-    console.log('Zod state:', state)
+    console.log('zod state:', state)
 }, { deep: true, immediate: true })
 </script>
 
