@@ -38,7 +38,7 @@ const {
 })
 
 watch(zodState, (state) => {
-    console.log('Meta', meta)
+    console.log('Meta', meta.value)
 }, { deep: true, immediate: true })
 </script>
 
