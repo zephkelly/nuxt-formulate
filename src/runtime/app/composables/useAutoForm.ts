@@ -2,6 +2,8 @@
 import { type Ref, ref, watch } from 'vue';
 import { useState } from 'nuxt/app';
 
+import { debounce } from '../../shared/utils/debounce';
+
 import type { SchemaType, InferSchemaType } from '../../shared/types/schema';
 import type { DefaultValueGenerationOptions } from '../../shared/types/defaults';
 import type { MetaStateType } from '../../shared/types/meta';
@@ -193,8 +195,6 @@ export function useAutoForm<TSchema extends SchemaType>(
     );
 
     const initialStateSnapshot = structuredClone(mergedInitialValues);
-    
-    const mergedPartialSchema = schemas?.partial || createPartialFromSchema(schema);
 
 
     // -- State handling
@@ -218,6 +218,24 @@ export function useAutoForm<TSchema extends SchemaType>(
         state = ref(mergedInitialValues) as Ref<FormState>;
     }
     
+    //
+    const mergedPartialSchema = schemas?.partial || createPartialFromSchema(schema);
+
+    const errorState = ref<any>(structuredClone(mergedInitialValues))
+
+    function handlePartialValidation(
+        partialSchema: SchemaType | Partial<InferSchemaType<TSchema>>,
+        state: InferSchemaType<TSchema>
+    ) {
+        try {
+            return handleValidate(partialSchema, state);
+        }
+        catch (error) {
+            errorState.value = error;
+        }
+    }
+
+    const debouncedHandlePartialValidation = debounce(handlePartialValidation, 1500);
 
 
     // -- Field metadata handling
@@ -225,12 +243,18 @@ export function useAutoForm<TSchema extends SchemaType>(
     
     watch(state, (newValue) => {
         updateAllDirtyStates(metaState, newValue, initialStateSnapshot);
+
+        debouncedHandlePartialValidation(mergedPartialSchema, state.value)
     }, { deep: true });
+
+
+    
     
 
 
     return {
         state,
         meta: metaState as Ref<MetaStateType<InferSchemaType<TSchema>>>,
+        error: errorState as Ref<any>,
     };
 }

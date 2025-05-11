@@ -3,7 +3,10 @@
         <h1>Zod Test</h1>
         <input
             v-model="state.string.isDirty"
-            :class="{ dirty: meta.string.isDirty.isDirty$ }"
+            :class="{
+                dirty: meta.string.isDirty?.isDirty$ ,
+                error: error.string.isDirty
+            }"
             placeholder="Name"
             
         />
@@ -26,9 +29,9 @@ import * as z from 'zod'
 
 const zodSchema = z.interface({
     string: z.interface({
-        isDirty: z.string(),
+        isDirty: z.number(),
         numberNested: z.number(),
-    }),
+    }).partial(),
     number: z.number(),
     array: z.array(z.string()),
 })
@@ -36,9 +39,14 @@ const zodSchema = z.interface({
 const {
     state,
     meta,
+    error
 } = useAutoForm(zodSchema, {
 
 })
+
+watch(error, (newError) => {
+    console.error('Error', newError.string)
+}, { deep: true, immediate: true })
 
 watch(state, (newState) => {
     console.log('Meta', meta.value)
@@ -63,4 +71,8 @@ input {
 input.dirty {
     border-color: purple;    
 }
+
+input.error {
+    border-color: red;
+} 
 </style>
