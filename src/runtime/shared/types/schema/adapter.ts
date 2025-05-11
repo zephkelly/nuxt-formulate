@@ -16,6 +16,11 @@ export interface SchemaAdapter<T> {
     createPartialSchema(schema: SchemaType): T;
 
     /**
+     * Create a meta object for the schema
+     */
+    createMetaState(schema: SchemaType, options?: DefaultValueGenerationOptions): any;
+
+    /**
      * Handle validation errors and return a consistent format
      */
     handleValidate(schema: SchemaType, state: InferSchemaType<SchemaType>): T | any;
@@ -24,7 +29,11 @@ export interface SchemaAdapter<T> {
      * Handle validation errors and return a consistent format
      */
     handleValidationErrors(state: InferSchemaType<SchemaType>): any;
+
     
+    
+
+
 
     // Used in the adapter registry
     

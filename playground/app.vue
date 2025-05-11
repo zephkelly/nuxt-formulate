@@ -29,12 +29,14 @@ const zodSchema = z.interface({
 
 const {
     state: zodState,
+    meta
 } = useAutoForm(zodSchema, {
     
 })
 
 watch(zodState, (state) => {
-
+    console.log('zodState', state)
+    console.log('zodState meta', meta)
     // try {
     //     zodSchema.parse(state)
     // } catch (e) {
