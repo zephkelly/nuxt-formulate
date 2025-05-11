@@ -2,19 +2,20 @@
     <form class="container" style="display: flex; flex-direction: column; gap: 1rem;">
         <h1>Zod Test</h1>
         <input
-            v-model="zodState.string.isDirty"
-            :class="{ dirty: meta.string.isDirty.$isDirty }"
+            v-model="state.string.isDirty"
+            :class="{ dirty: meta.string.isDirty.isDirty$ }"
             placeholder="Name"
             
         />
 
         <input
-            v-model="zodState.number"
+            v-model="state.number"
+            :class="{ dirty: meta.number.isDirty$ }"
             placeholder="Name"
         />
 
         <p>
-            <span class="state">{{ zodState }}</span>
+            <span class="state">{{ state }}</span>
         </p>
     </form>
 </template>
@@ -33,13 +34,13 @@ const zodSchema = z.interface({
 })
 
 const {
-    state: zodState,
+    state,
     meta,
 } = useAutoForm(zodSchema, {
 
 })
 
-watch(zodState, (state) => {
+watch(state, (newState) => {
     console.log('Meta', meta.value)
 }, { deep: true, immediate: true })
 </script>

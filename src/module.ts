@@ -57,6 +57,12 @@ function setupValidationAdapters(resolver: Resolver, _options: ModuleOptions): v
         if (!validAdapters.includes(adapter as AdapterType)) {
             throw new Error(`Invalid adapter "${adapter}" provided. Valid adapters are: ${validAdapters.join(', ')}`)
         }
+        else {
+            console.log(
+                '%c FORMULATE ', 'color: black; background-color: #0f8dcc; font-weight: bold; font-size: 1.15rem;',
+                `⚡ Registering ${adapter} adapter`
+            );
+        }
     })
 
     addTemplate({

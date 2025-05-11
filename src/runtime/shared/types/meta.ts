@@ -1,28 +1,20 @@
 export type MetaField = {
-    $isTouched: boolean;
-    $isDirty: boolean;
-    $isValid: boolean;
-    $validating: boolean;
+    isDirty$: boolean;
+    isValid$: boolean;
 };
 
 
 // This ensures the meta state object is type-safe
 export type MetaStateType<T> = T extends any ? (
     T extends (infer U)[] ? {
-            $isTouched: boolean;
-            $isDirty: boolean;
-            $isValid: boolean;
-            $validating: boolean;
+            isDirty$: boolean;
+            isValid$: boolean;
         } & { items: MetaStateType<U>[] } :
     T extends object ? {
-            $isTouched: boolean;
-            $isDirty: boolean;
-            $isValid: boolean;
-            $validating: boolean;
+            isDirty$: boolean;
+            isValid$: boolean;
         } & { [K in keyof T]: MetaStateType<T[K]> } : {
-        $isTouched: boolean;
-        $isDirty: boolean;
-        $isValid: boolean;
-        $validating: boolean;
+            isDirty$: boolean;
+            isValid$: boolean;
     }
 ) : never;

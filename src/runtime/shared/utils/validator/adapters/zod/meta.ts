@@ -1,7 +1,6 @@
 import * as z from "@zod/core"
 
 import type { DefaultValueGenerationOptions } from "../../../../types/defaults";
-import type { SchemaType } from "../../../../types/schema";
 
 
 /**
@@ -14,9 +13,8 @@ export function createMetaState(
     currentDepth: number = 0
 ): Record<string, any> {
     const defaultFieldMeta = {
-        isDirty: false,
-        isValid: true,
-        validating: false,
+        isDirty$: false,
+        isValid$: true,
     };
 
     let schemaType: string = 'unknown';
