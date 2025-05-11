@@ -4,6 +4,7 @@ import { useState } from 'nuxt/app';
 
 import type { SchemaType, InferSchemaType } from '../../shared/types/schema';
 import type { DefaultValueGenerationOptions } from '../../shared/types/defaults';
+import type { MetaStateType } from '../../shared/types/meta';
 
 import { mergeWithGlobalOptions } from '../../shared/utils/options';
 import { updateAllDirtyStates } from '../../shared/utils/validator/meta';
@@ -230,6 +231,6 @@ export function useAutoForm<TSchema extends SchemaType>(
 
     return {
         state,
-        meta: metaState,
+        meta: metaState as Ref<MetaStateType<InferSchemaType<TSchema>>>,
     };
 }
