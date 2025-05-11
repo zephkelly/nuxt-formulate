@@ -3,11 +3,18 @@ import { type Ref, ref, watch } from 'vue';
 import { useState } from 'nuxt/app';
 
 import type { SchemaType, InferSchemaType } from '../../shared/types/schema';
+import type { DefaultValueGenerationOptions } from '../../shared/types/defaults';
 
 import { mergeWithGlobalOptions } from '../../shared/utils/options';
-import { createDefaultValues, createPartialSchema, createMetaState, handleValidate } from '../../shared/utils/validator';
-import type { DefaultValueGenerationOptions } from '../../shared/types/defaults';
-import type { FieldMeta } from '../../shared/types/meta';
+import { updateAllDirtyStates } from '../../shared/utils/validator/meta';
+import {
+    createDefaultValues,
+    createPartialSchema,
+    createMetaState,
+    handleValidate
+} from '../../shared/utils/validator';
+
+
 
  ///////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -173,12 +180,7 @@ export function useAutoForm<TSchema extends SchemaType>(
         options
     );
     
-    const {
-        key,
-        defaults,
-        defaultValueOptions,
-        schemas,
-    } = formOptions;
+    const { key, defaults, defaultValueOptions, schemas } = formOptions;
     
     type FormState = InferSchemaType<TSchema>;
     
@@ -189,248 +191,45 @@ export function useAutoForm<TSchema extends SchemaType>(
         defaultValueOptions
     );
 
-    // Create a deep copy of initial values to compare against for dirty checking
-    const initialStateSnapshot = JSON.parse(JSON.stringify(mergedInitialValues));
-
-    // Generate flattened paths for all nested fields
-    const allFieldPaths = getAllNestedPaths(mergedInitialValues);
+    const initialStateSnapshot = structuredClone(mergedInitialValues);
     
-    // Initialize metaState with proper structure
-    const metaState = ref({} as Record<string, FieldMeta>);
-    
-    // Initialize meta fields for all nested paths
-    initializeMetaFields(metaState.value, allFieldPaths);
-
-    // -- State handling with Proxy wrapping
-    let state: Ref<FormState>;
-    
-    // Helper function to create a proxy that tracks changes
-    function createTrackingProxy(target: any, path = ''): any {
-        if (target === null || typeof target !== 'object') {
-            return target;
-        }
-        
-        return new Proxy(target, {
-            get(obj, prop) {
-                if (typeof prop === 'symbol') return obj[prop];
-                
-                const value = obj[prop];
-                const newPath = path ? `${path}.${prop}` : `${prop}`;
-                
-                if (value !== null && typeof value === 'object') {
-                    return createTrackingProxy(value, newPath);
-                }
-                
-                return value;
-            },
-            set(obj, prop, value) {
-                if (typeof prop === 'symbol') {
-                    obj[prop] = value;
-                    return true;
-                }
-                
-                const newPath = path ? `${path}.${prop}` : `${prop}`;
-                const oldValue = obj[prop];
-                
-                // Set the new value
-                obj[prop] = value;
-                
-                // Check if the value has changed
-                const isDirty = !isDeepEqual(value, getValueByPath(initialStateSnapshot, newPath));
-                
-                // Mark field as dirty if changed
-                updateMetaStateField(metaState.value, newPath, 'isDirty', isDirty);
-                
-                return true;
-            }
-        });
-    }
-    
-    // External ref provided - wrap it with proxy
-    if (externalRef) {
-        if (Object.keys(externalRef.value || {}).length === 0) {
-            externalRef.value = createTrackingProxy(mergedInitialValues) as FormState;
-        } else {
-            externalRef.value = createTrackingProxy(externalRef.value) as FormState;
-        }
-        
-        state = externalRef;
-    } 
-    // Key provided - use useState with proxy
-    else if (key) {
-        const stateValue = useState<FormState>(key, () => mergedInitialValues as FormState);
-        stateValue.value = createTrackingProxy(stateValue.value) as FormState;
-        state = stateValue;
-    } 
-    // No key, no external ref - use local ref with proxy
-    else {
-        state = ref(createTrackingProxy(mergedInitialValues)) as Ref<FormState>;
-    }
-
-    // -- Partial schema handling
     const mergedPartialSchema = schemas?.partial || createPartialFromSchema(schema);
 
-    // Watch for validation changes
+
+    // -- State handling
+    let state: Ref<FormState>;
+
+    // External ref provided - use directly
+    if (externalRef) {
+        
+        if (Object.keys(externalRef.value || {}).length === 0) {
+            externalRef.value = mergedInitialValues as FormState;
+        }
+        state = externalRef;
+    }
+    // Key provided - use useState 
+    else if (key) {
+        
+        state = useState<FormState>(key, () => mergedInitialValues as FormState);
+    } 
+    // No key, no external ref - use local ref
+    else {
+        state = ref(mergedInitialValues) as Ref<FormState>;
+    }
+    
+
+
+    // -- Field metadata handling
+    const metaState = ref(createMetaState<TSchema>(schema, defaultValueOptions));
+    
     watch(state, (newValue) => {
-        const validationResult = handleValidate(mergedPartialSchema, newValue);
-        // Update validation results in metaState
-        updateMetaStateValidation(metaState.value, validationResult);
+        updateAllDirtyStates(metaState, newValue, initialStateSnapshot);
     }, { deep: true });
-
-    // Helper function to get all nested paths in an object
-    function getAllNestedPaths(obj: any, path = '', result: string[] = []): string[] {
-        if (obj === null || typeof obj !== 'object') {
-            result.push(path);
-            return result;
-        }
-        
-        // Add the current path if it's not empty
-        if (path) result.push(path);
-        
-        for (const key in obj) {
-            const newPath = path ? `${path}.${key}` : key;
-            if (obj[key] !== null && typeof obj[key] === 'object') {
-                getAllNestedPaths(obj[key], newPath, result);
-            } else {
-                result.push(newPath);
-            }
-        }
-        
-        return result;
-    }
-
-    // Initialize meta fields for all discovered paths
-    function initializeMetaFields(meta: Record<string, FieldMeta>, paths: string[]) {
-        paths.forEach(path => {
-            if (!meta[path]) {
-                meta[path] = {
-                    isDirty: false,
-                    isTouched: false,
-                    isValid: true,
-                    validating: false
-                };
-            }
-        });
-    }
-
-    // Deep equality check
-    function isDeepEqual(a: any, b: any): boolean {
-        if (a === b) return true;
-        
-        if (a === null || b === null || 
-            typeof a !== 'object' || typeof b !== 'object') {
-            return a === b;
-        }
-        
-        if (Array.isArray(a) && Array.isArray(b)) {
-            if (a.length !== b.length) return false;
-            return a.every((item, index) => isDeepEqual(item, b[index]));
-        }
-        
-        const keysA = Object.keys(a);
-        const keysB = Object.keys(b);
-        
-        if (keysA.length !== keysB.length) return false;
-        
-        return keysA.every(key => isDeepEqual(a[key], b[key]));
-    }
-
-    // Helper to get a value by path
-    function getValueByPath(obj: any, path: string): any {
-        if (!path) return obj;
-        return path.split('.').reduce((prev, curr) => 
-            prev && prev[curr] !== undefined ? prev[curr] : undefined, obj);
-    }
-
-    // Update meta state field
-    function updateMetaStateField(
-        meta: Record<string, FieldMeta>, 
-        path: string, 
-        property: keyof FieldMeta, 
-        value: boolean
-    ) {
-        if (!meta[path]) {
-            meta[path] = {
-                isDirty: false,
-                isTouched: false,
-                isValid: true,
-                validating: false
-            };
-        }
-        
-        meta[path][property] = value;
-        
-        // Update parent paths dirty status
-        if (property === 'isDirty' && value === true) {
-            updateParentPathsDirty(meta, path);
-        }
-    }
     
-    // Update parent paths as dirty when child is dirty
-    function updateParentPathsDirty(meta: Record<string, FieldMeta>, path: string) {
-        const parts = path.split('.');
-        
-        // Update each parent path
-        while (parts.length > 1) {
-            parts.pop();
-            const parentPath = parts.join('.');
-            
-            if (parentPath && meta[parentPath]) {
-                meta[parentPath].isDirty = true;
-            }
-        }
-    }
-    
-    // Implement validation update based on your validation result format
-    function updateMetaStateValidation(meta: Record<string, FieldMeta>, validationResult: any) {
-        // Implementation depends on your validation result format
-        if (!validationResult) return;
-        
-        // Example implementation
-        if (validationResult.errors) {
-            //@ts-expect-error
-            Object.entries(validationResult.errors).forEach(([path, errors]: [string, any[]]) => {
-                if (!meta[path]) {
-                    meta[path] = {
-                        isDirty: false,
-                        isTouched: false,
-                        isValid: true,
-                        validating: false
-                    };
-                }
-                
-                meta[path].isValid = errors.length === 0;
-                meta[path].validating = false;
-            });
-        }
-    }
+
 
     return {
         state,
         meta: metaState,
-        // Utility methods
-        markTouched: (path: string) => updateMetaStateField(metaState.value, path, 'isTouched', true),
-        markValidating: (path: string, isValidating: boolean = true) => 
-            updateMetaStateField(metaState.value, path, 'validating', isValidating),
-        resetToDefault: () => {
-            // Create a new proxy with initial values
-            const resetValues = createTrackingProxy(
-                JSON.parse(JSON.stringify(initialStateSnapshot))
-            ) as FormState;
-            
-            // Assign to state
-            state.value = resetValues;
-            
-            // Reset meta state
-            Object.keys(metaState.value).forEach(path => {
-                if (metaState.value[path]) {
-                    metaState.value[path].isDirty = false;
-                    metaState.value[path].isTouched = false;
-                    metaState.value[path].validating = false;
-                }
-            });
-        },
-        // Get flattened list of all field paths
-        getFieldPaths: () => allFieldPaths
     };
 }

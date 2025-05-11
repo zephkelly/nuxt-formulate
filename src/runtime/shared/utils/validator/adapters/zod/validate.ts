@@ -8,7 +8,6 @@ export function handleZodValidate(schema: z.$ZodAny, state: z.infer<typeof schem
         return schema.parse(state);
     }
     catch (error) {
-        console.error('Zod validation error:', error);
         if (error instanceof z.$ZodError) {
             return handleZodSchemaValidationErrors(error);
         }

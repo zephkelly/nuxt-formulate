@@ -2,12 +2,15 @@
     <form class="container" style="display: flex; flex-direction: column; gap: 1rem;">
         <h1>Zod Test</h1>
         <input
+            :class="{ dirty: meta.string.numberNested.isDirty }"
             v-model="zodState.string.numberNested"
             placeholder="Name"
+            
         />
 
         <input
             v-model="zodState.number"
+            :class="{ dirty: meta.number.isDirty}"
             placeholder="Name"
         />
 
@@ -19,6 +22,7 @@
 
 <script lang="ts" setup>
 // Zod testing
+import type { error } from 'console'
 import * as z from 'zod'
 
 const zodSchema = z.interface({
@@ -49,5 +53,15 @@ html body {
 
 p {
     color: white;
+}
+
+input {
+    outline: none;
+    border: 4px solid white;
+    border-radius: 6px;
+}
+
+input.dirty {
+    border-color: purple;    
 }
 </style>
