@@ -14,7 +14,6 @@ export function createMetaState(
     currentDepth: number = 0
 ): Record<string, any> {
     const defaultFieldMeta = {
-        isTouched: false,
         isDirty: false,
         isValid: true,
         validating: false,

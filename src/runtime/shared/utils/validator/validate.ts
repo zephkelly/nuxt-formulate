@@ -3,7 +3,7 @@ import type { SchemaType, InferSchemaType } from '../../types/schema';
 
 
 
-export function handleValidate<T extends SchemaType>(schema: SchemaType, state: InferSchemaType<SchemaType>) {
+export function handleValidate<TSchema extends SchemaType>(schema: SchemaType | Partial<InferSchemaType<TSchema>>, state: InferSchemaType<SchemaType>) {
     const adapter = getAdapterForSchema(schema);
     
     if (adapter) {

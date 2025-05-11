@@ -50,7 +50,7 @@ export type FormulateOptions<TSchema extends SchemaType> = {
          * A partial schema to use for validation during form editing
          * If not provided, fallback to partialSchema or auto-generated one
          */
-        partial?: Partial<InferSchemaType<TSchema>>;
+        partial?: SchemaType;
     };
 };
 
@@ -191,6 +191,8 @@ export function useAutoForm<TSchema extends SchemaType>(
         defaultValueOptions
     );
 
+    const initialStateSnapshot = structuredClone(mergedInitialValues);
+
     
 
     // -- State handling
@@ -219,14 +221,14 @@ export function useAutoForm<TSchema extends SchemaType>(
     const mergedPartialSchema = schemas?.partial || createPartialFromSchema(schema);
 
     watch(state, (newValue) => {
-        const hello = handleValidate(schema, newValue);
-
-        console.log('hello there::::', hello);
+        const validationResult = handleValidate(mergedPartialSchema, newValue);
+        
     }, { deep: true });
+
+
 
     return {
         state,
         meta: metaState,
-        
     };
 }

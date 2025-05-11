@@ -23,7 +23,7 @@ export interface SchemaAdapter<T> {
     /**
      * Handle validation errors and return a consistent format
      */
-    handleValidate(schema: SchemaType, state: InferSchemaType<SchemaType>): T | any;
+    handleValidate<TSchema extends SchemaType>(schema: SchemaType | Partial<InferSchemaType<TSchema>>, state: InferSchemaType<SchemaType>): T | any;
 
     /**
      * Handle validation errors and return a consistent format

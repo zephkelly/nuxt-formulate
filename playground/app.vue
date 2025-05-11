@@ -1,8 +1,8 @@
 <template>
-    <div class="container" style="display: flex; flex-direction: column; gap: 1rem;">
+    <form class="container" style="display: flex; flex-direction: column; gap: 1rem;">
         <h1>Zod Test</h1>
         <input
-            v-model="zodState.string"
+            v-model="zodState.string.numberNested"
             placeholder="Name"
         />
 
@@ -14,7 +14,7 @@
         <p>
             <span class="state">{{ zodState }}</span>
         </p>
-    </div>
+    </form>
 </template>
 
 <script lang="ts" setup>
@@ -22,27 +22,23 @@
 import * as z from 'zod'
 
 const zodSchema = z.interface({
-    string: z.string(),
+    string: z.interface({
+        stringNested: z.string(),
+        numberNested: z.number(),
+    }),
     number: z.number(),
     array: z.array(z.string()),
 })
 
 const {
     state: zodState,
-    meta
+    meta,
 } = useAutoForm(zodSchema, {
-    
+
 })
 
 watch(zodState, (state) => {
-    console.log('zodState', state)
-    console.log('zodState meta', meta)
-    // try {
-    //     zodSchema.parse(state)
-    // } catch (e) {
-    //     console.error('zod error app.vue:', e)
-    // }
-
+    console.log('Meta', meta)
 }, { deep: true, immediate: true })
 </script>
 
