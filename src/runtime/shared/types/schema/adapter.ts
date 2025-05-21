@@ -21,6 +21,11 @@ export interface SchemaAdapter<T> {
     createMetaState(schema: SchemaType, options?: DefaultValueGenerationOptions): any;
 
     /**
+     * Handle validation and return a consistent format
+     */
+    syncArraysWithMetaState(metaState: any, state: InferSchemaType<SchemaType>, schema: SchemaType, options?: DefaultValueGenerationOptions): any;
+
+    /**
      * Handle validation errors and return a consistent format
      */
     handleValidate<TSchema extends SchemaType>(schema: SchemaType | Partial<InferSchemaType<TSchema>>, state: InferSchemaType<SchemaType>): T | any;

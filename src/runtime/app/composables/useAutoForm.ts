@@ -14,8 +14,11 @@ import {
     createDefaultValues,
     createPartialSchema,
     createMetaState,
+    syncArraysWithMetaState,
     handleValidate
 } from '../../shared/utils/validator';
+
+import { updateValidationStates } from '../../shared/utils/validator/meta';
 
 
 
@@ -254,9 +257,24 @@ export function useAutoForm<TSchema extends SchemaType>(
     const metaState = ref(createMetaState<TSchema>(schema, defaultValueOptions));
     
     watch(state, (newValue) => {
+        // 1. First sync the metastate structure with the form state
+        syncArraysWithMetaState(metaState.value, newValue, schema, defaultValueOptions);
+        
+        // 2. Update dirty states
         updateAllDirtyStates(metaState, newValue, initialStateSnapshot);
-
-        debouncedHandlePartialValidation(mergedPartialSchema, state.value)
+        
+        // 3. Run immediate validation and update validation states
+        try {
+            handlePartialValidation(mergedPartialSchema, state.value);
+            // Update validation states after successful validation
+            updateValidationStates(metaState.value, true, undefined);
+        } catch (error) {
+            // Update validation states with errors
+            updateValidationStates(metaState.value, false, errorState.value);
+        }
+        
+        // 4. Run debounced validation for UI responsiveness
+        debouncedHandlePartialValidation(mergedPartialSchema, state.value);
     }, { deep: true });
 
 

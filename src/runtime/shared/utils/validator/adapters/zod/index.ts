@@ -5,7 +5,7 @@ import type { SchemaAdapter } from "../../../../types/schema/adapter";
 
 import { createZodPartialSchema } from "./partial";
 import { createZodSchemaDefaultValues } from "./defaults";
-import { createMetaState } from "./meta";
+import { createMetaState, syncArraysWithMetaState } from "./meta";
 import { handleZodSchemaValidationErrors } from "./errors";
 
 import type { DefaultValueGenerationOptions } from '../../../../types/defaults';
@@ -36,6 +36,10 @@ export const ZodAdapter: SchemaAdapter<any> = {
 
     createMetaState(schema, options?: DefaultValueGenerationOptions) {
         return createMetaState(schema as z.$ZodAny, options);
+    },
+
+    syncArraysWithMetaState(metaState: any, state: z.infer<z.$ZodAny>, schema: z.$ZodAny, options?: DefaultValueGenerationOptions) {
+        return syncArraysWithMetaState(metaState, state, schema, options);
     },
 
     handleValidate(schema: z.$ZodAny, state: z.infer<z.$ZodAny> ) {

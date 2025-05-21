@@ -1,19 +1,22 @@
 <template>
     <div class="container" style="display: flex; flex-direction: column; gap: 1rem;">
         <h1>Zod Test</h1>
-        <input
-            v-model="zodState[0].string"
-            placeholder="Name"
-            type="text"
-            :class="{
-                dirty: zodMetadata.items[0]?.string.isDirty$,
-             }"
-
-        />
-
         <p>{{ zodState }}</p>
+        <button @click="zodState.push({})">Add</button>
+        <div class="container" v-for="(item, index) in zodState" :key="index">
+            <input 
+                v-model="zodState[index].string"
+                placeholder="Name"
+                type="text"
+                :class="{
+                    dirty: zodMetadata.items[index]?.string.isDirty$,
+                 }"
+            />
+            <p>{{ index }}</p>
+            <p>{{ zodMetadata.items[index]?.string }}</p>
+        </div>
 
-        <p>{{ zodMetadata.items }}</p>
+
     </div>
 </template>
 
