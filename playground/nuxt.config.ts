@@ -4,6 +4,15 @@ export default defineNuxtConfig({
         validators: [
             "zod"
         ],
+        defaultValueOptions: {
+            primitives: 'undefined',
+            arrays: {
+                method: 'populate',
+                depth: {
+                    max: 1,
+                }
+            }
+        }
     },
     devtools: { enabled: true },
 })

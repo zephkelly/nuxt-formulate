@@ -1,23 +1,51 @@
+import type { DefaultValueGenerationOptions } from '../../types/defaults';
+import type { SchemaType, InferSchemaType } from '../../types/schema';
+
+
 export interface SchemaAdapter<T> {
     /**
      * Create default values based on schema
+     * @param schema The schema to create default values for
+     * @param options Options for controlling default value generation
      */
-    createDefaultValues(schema: T): any;
+    createDefaultValues(schema: SchemaType, options?: DefaultValueGenerationOptions): any;
     
     /**
      * Create a partial version of the schema for validation during editing
      */
-    createPartialSchema(schema: T): T;
-    
+    createPartialSchema(schema: SchemaType): T;
+
     /**
-     * Convert validation errors to a consistent format
+     * Create a meta object for the schema
      */
-    handleValidationErrors(error: any): Record<string, any>;
+    createMetaState(schema: SchemaType, options?: DefaultValueGenerationOptions): any;
+
+    /**
+     * Handle validation and return a consistent format
+     */
+    syncArraysWithMetaState(metaState: any, state: InferSchemaType<SchemaType>, schema: SchemaType, options?: DefaultValueGenerationOptions): any;
+
+    /**
+     * Handle validation errors and return a consistent format
+     */
+    handleValidate<TSchema extends SchemaType>(schema: SchemaType | Partial<InferSchemaType<TSchema>>, state: InferSchemaType<SchemaType>): T | any;
+
+    /**
+     * Handle validation errors and return a consistent format
+     */
+    handleValidationErrors(state: InferSchemaType<SchemaType>): any;
+
+    
+    
+
+
+
+    // Used in the adapter registry
     
     /**
      * Check if a schema is of this adapter's type
      */
-    isCompatible(schema: any): boolean;
+    isCompatible(schema: SchemaType): boolean;
 
     /**
      * Check if the adapter supports a specific vendor

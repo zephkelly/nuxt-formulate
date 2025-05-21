@@ -1,11 +1,15 @@
+import * as z from '@zod/core';
 import { registerAdapter } from '../../adapter-registry';
 
 import type { SchemaAdapter } from "../../../../types/schema/adapter";
 
 import { createZodPartialSchema } from "./partial";
 import { createZodSchemaDefaultValues } from "./defaults";
+import { createMetaState, syncArraysWithMetaState } from "./meta";
 import { handleZodSchemaValidationErrors } from "./errors";
 
+import type { DefaultValueGenerationOptions } from '../../../../types/defaults';
+import { handleZodValidate } from './validate';
 
 
 /*
@@ -22,15 +26,27 @@ export function isZodSchema(schema: any): boolean {
 
 
 export const ZodAdapter: SchemaAdapter<any> = {
-    createDefaultValues(schema) {
-        return createZodSchemaDefaultValues(schema);
+    createDefaultValues(schema: z.$ZodAny, options?: DefaultValueGenerationOptions): any {
+        return createZodSchemaDefaultValues(schema, options);
     },
     
     createPartialSchema(schema) {
-        return createZodPartialSchema(schema);
+        return createZodPartialSchema(schema as z.$ZodAny);
     },
-    
-    handleValidationErrors(error) {
+
+    createMetaState(schema, options?: DefaultValueGenerationOptions) {
+        return createMetaState(schema as z.$ZodAny, options);
+    },
+
+    syncArraysWithMetaState(metaState: any, state: z.infer<z.$ZodAny>, schema: z.$ZodAny, options?: DefaultValueGenerationOptions) {
+        return syncArraysWithMetaState(metaState, state, schema, options);
+    },
+
+    handleValidate(schema: z.$ZodAny, state: z.infer<z.$ZodAny> ) {
+        return handleZodValidate(schema, state);
+    },
+
+    handleValidationErrors(error: z.$ZodError) {
         return handleZodSchemaValidationErrors(error);
     },
     
@@ -40,11 +56,5 @@ export const ZodAdapter: SchemaAdapter<any> = {
 };
 
 export function register() {
-    if (import.meta.dev && import.meta.server) {
-        console.log(
-            '%c FORMULATE ', 'color: black; background-color: #0f8dcc; font-weight: bold; font-size: 1.15rem;',
-            '⚡ Registering Zod adapter'
-        );
-    }
     registerAdapter('zod', ZodAdapter);
 }

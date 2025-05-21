@@ -1,89 +1,50 @@
 <template>
     <div class="container" style="display: flex; flex-direction: column; gap: 1rem;">
         <h1>Zod Test</h1>
-        <input
-            placeholder="Name"
-        />
+        <p>{{ zodState }}</p>
+        <button @click="zodState.push({})">Add</button>
+        <div class="container" v-for="(item, index) in zodState" :key="index">
+            <input 
+                v-model="zodState[index].string"
+                placeholder="Name"
+                type="text"
+                :class="{
+                    dirty: zodMetadata.items[index]?.string.isDirty$,
+                 }"
+            />
+            <p>{{ index }}</p>
+            <p>{{ zodMetadata.items[index]?.string }}</p>
+        </div>
 
-        <p>
-            <span class="state"></span>
-        </p>
-    </div>
 
-    <div class="container" style="display: flex; flex-direction: column; gap: 1rem;">
-        <h1>Valibot Test</h1>
-        <input
-            v-model="valibotState.name"
-            placeholder="Name"
-        />
-
-        <p>
-            <span class="state">{{ valibotState }}</span>
-        </p>
-    </div>
-
-    <div class="container" style="display: flex; flex-direction: column; gap: 1rem;">
-        <h1>Arktype Test</h1>
-        <input
-            v-model="arktypeState.name"
-            placeholder="Name"
-        />
-
-        <p>
-            <span class="state">{{ arktypeState }}</span>
-        </p>
     </div>
 </template>
 
 <script lang="ts" setup>
 // Zod testing
-import * as z from 'zod'
+import { z } from 'zod/v4'
 
-const zodSchema = z.interface({
-    string: z.string(),
+const zodSchema = z.array(z.object({
+    string: z.number(),
     number: z.number(),
     int: z.int(),
     boolean: z.boolean(),
     date: z.date(),
     bigint: z.bigint(),
-    array: z.array(z.string()),
-    array2: z.array(z.interface({
-        name: z.string(),
-        age: z.number().int().positive()
-    })),
-})
+}))
 
 const {
     state: zodState,
-} = useFormulate(z.array(zodSchema))
-
-
-
-// // Valibot testing
-import * as v from 'valibot'
-
-const valibotSchema = v.object({
-    name: v.pipe(v.string(), v.minLength(1)),
-    age: v.pipe(v.number(), v.minValue(18))
-});
-const {
-    state: valibotState,
-} = useFormulate(valibotSchema)
-
-
-
-// Arktype testing
-import { type } from "arktype"
-
-const arktypeSchema = type({
-	name: "string > 1",
-    age: "number > 18",
+    metadata: zodMetadata,
+    errors: zodErrors,
+} = useAutoForm(zodSchema, {
+    defaultValueOptions: {
+        arrays: {
+            method: 'populate',
+            length: 2,
+        }
+    },
 })
-
-const {
-    state: arktypeState,
-} = useFormulate(arktypeSchema)
-
 </script>
 
 <style lang="css">
@@ -93,5 +54,11 @@ html body {
 
 p {
     color: white;
+}
+
+input {
+    &.dirty {
+        border: 4px solid purple;
+    }
 }
 </style>

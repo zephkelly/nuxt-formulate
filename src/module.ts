@@ -8,7 +8,7 @@ import {
 } from '@nuxt/kit'
 
 import type { AdapterType } from './runtime/shared/types/schema/adapter'
-
+import type { DefaultValueGenerationOptions } from './runtime/shared/types/defaults'
 
 
 export interface ModuleOptions {
@@ -16,6 +16,8 @@ export interface ModuleOptions {
      * Validation libraries to be used by the module
      */
     validators?: AdapterType[]
+
+    defaultValueOptions?: DefaultValueGenerationOptions
 }
 
 export default defineNuxtModule<ModuleOptions>({
@@ -24,7 +26,11 @@ export default defineNuxtModule<ModuleOptions>({
         configKey: 'formulate',
     },
     defaults: {
-        validators: []
+        validators: [],
+        defaultValueOptions: {
+            primitives: 'sensible',
+            arrays: 'empty',
+        }
     },
     setup(_options, _nuxt) {
         const resolver = createResolver(import.meta.url)
@@ -33,7 +39,7 @@ export default defineNuxtModule<ModuleOptions>({
             filename: 'formulate-options.mjs',
             getContents: () => `
 export default ${JSON.stringify(_options)}
-            `,
+`,
         })
 
         setupValidationAdapters(resolver, _options)
@@ -50,6 +56,12 @@ function setupValidationAdapters(resolver: Resolver, _options: ModuleOptions): v
     requestedAdapters.forEach((adapter) => {
         if (!validAdapters.includes(adapter as AdapterType)) {
             throw new Error(`Invalid adapter "${adapter}" provided. Valid adapters are: ${validAdapters.join(', ')}`)
+        }
+        else {
+            console.log(
+                '%c FORMULATE ', 'color: black; background-color: #0f8dcc; font-weight: bold; font-size: 1.15rem;',
+                `⚡ Registering ${adapter} adapter`
+            );
         }
     })
 

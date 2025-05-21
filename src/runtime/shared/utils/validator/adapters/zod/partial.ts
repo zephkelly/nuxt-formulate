@@ -2,24 +2,26 @@ import * as z from '@zod/core';
 
 
 
-export function createZodPartialSchema<T extends z.$ZodType>(schema: T): z.$ZodType {
-    // -------------------------------------------------------------------------
-    // Handle interfaces
-    // -------------------------------------------------------------------------
-    if (
-        schema instanceof z.$ZodInterface
-    ) {
-        //@ts-ignore
+export function createZodPartialSchema<T extends z.$ZodType>(schema: z.$ZodType): z.$ZodAny {
+    let schemaType: z.$ZodTypeDef['type'] = 'unknown';
+    if (schema._zod && schema._zod.def) {
+        schemaType = schema._zod.def.type;
+    }
+    //@ts-expect-error
+    else if (schema.type) {
+        // @ts-expect-error
+        schemaType = schema.type;
+    }
+
+    if (schemaType === 'object') {
+        //@ts-ignore - We know the type is an interface
         return schema.partial();
     }
     
-    // -------------------------------------------------------------------------
-    // Handle arrays
-    // -------------------------------------------------------------------------
-    if (schema instanceof z.$ZodArray) {
-        //@ts-ignore
-        return z.array(schema.partial()).optional();
+    if (schemaType === 'array') {
+        //@ts-ignore - We know the type is an array
+        return schema.element.partial()
     }
-    
-    return schema;
+
+    throw new Error(`Zod schema of type ${schemaType} is not supported for partial schemas`);
 }
