@@ -1,10 +1,6 @@
 {
   "name": "formulate",
-<<<<<<< HEAD
   "version": "0.0.1",
-=======
-  "version": "1.0.0",
->>>>>>> 9956cc269ad83cfde3eb14aea82e177eac194110
   "description": "A Form management and validation library for Nuxt",
   "repository": "zephkelly/formulate",
   "license": "MIT",
