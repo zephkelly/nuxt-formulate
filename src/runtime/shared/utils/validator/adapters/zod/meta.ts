@@ -14,7 +14,7 @@ export function createMetaState(
 ): Record<string, any> {
     const defaultFieldMeta = {
         isDirty$: false,
-        isValid$: true,
+        isValid$: false,
     };
 
     let schemaType: string = 'unknown';
@@ -29,7 +29,6 @@ export function createMetaState(
     }
 
     if (schemaType === 'object') {
-        console.log('handleObjectMetaState');
         return handleObjectMetaState(schema, defaultFieldMeta, options, currentDepth);
     }
     

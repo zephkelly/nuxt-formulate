@@ -48,8 +48,5 @@ input {
     &.dirty {
         border: 4px solid purple;
     }
-    &.valid {
-        border: 4px solid green;
-    }
 }
 </style>

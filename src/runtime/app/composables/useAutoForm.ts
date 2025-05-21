@@ -254,7 +254,6 @@ export function useAutoForm<TSchema extends SchemaType>(
     const metaState = ref(createMetaState<TSchema>(schema, defaultValueOptions));
     
     watch(state, (newValue) => {
-        console.log('State changed:', newValue);
         updateAllDirtyStates(metaState, newValue, initialStateSnapshot);
 
         debouncedHandlePartialValidation(mergedPartialSchema, state.value)
