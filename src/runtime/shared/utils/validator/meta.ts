@@ -60,6 +60,8 @@ export function updateDirtyStateRecursively(
             }
             
             for (let i = 0; i < current.length; i++) {
+                console.log('Array detected, updating dirty states', i);
+                console.log(metaObj.items.length)
                 if (i < metaObj.items.length) {
                     const itemDirty = updateDirtyStateRecursively(
                         current[i], 

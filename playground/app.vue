@@ -2,16 +2,18 @@
     <div class="container" style="display: flex; flex-direction: column; gap: 1rem;">
         <h1>Zod Test</h1>
         <input
-            v-model="zodState.string"
+            v-model="zodState[0].string"
             placeholder="Name"
             type="text"
             :class="{
-                dirty: zodMetadata.string.isDirty$,
-                valid: zodMetadata.string.isValid$,
-            }"
+                dirty: zodMetadata.items[0]?.string.isDirty$,
+             }"
+
         />
 
-        <p>{{ zodErrors?.string }}</p>
+        <p>{{ zodState }}</p>
+
+        <p>{{ zodMetadata.items }}</p>
     </div>
 </template>
 
@@ -19,20 +21,27 @@
 // Zod testing
 import { z } from 'zod/v4'
 
-const zodSchema = z.object({
+const zodSchema = z.array(z.object({
     string: z.number(),
     number: z.number(),
     int: z.int(),
     boolean: z.boolean(),
     date: z.date(),
     bigint: z.bigint(),
-})
+}))
 
 const {
     state: zodState,
     metadata: zodMetadata,
     errors: zodErrors,
-} = useAutoForm(zodSchema)
+} = useAutoForm(zodSchema, {
+    defaultValueOptions: {
+        arrays: {
+            method: 'populate',
+            length: 2,
+        }
+    },
+})
 </script>
 
 <style lang="css">

@@ -33,6 +33,7 @@ export function createMetaState(
     }
     
     if (schemaType === 'array') {
+        console.log('Array schema detected');
         return handleArrayMetaState(schema, defaultFieldMeta, options, currentDepth);
     }
 
@@ -79,20 +80,60 @@ function handleArrayMetaState(
         ...defaultFieldMeta,
         items: [] as any[]
     };
-    
-    const { arrays = 'empty' } = options || {};
-    
-    if (typeof arrays === 'object' && arrays !== null && 'method' in arrays && 
-        arrays.method === 'populate' && arrays.length !== undefined) {
-        
-        const elementSchema = schema._zod && schema._zod.def && schema._zod.def.element;
-        
-        if (elementSchema) {
-            for (let i = 0; i < arrays.length; i++) {
-                arrayMeta.items.push(createMetaState(elementSchema, options, currentDepth + 1));
-            }
+
+    const elementSchema = schema._zod.def.element;
+
+    const arrayOptions = options?.arrays
+
+    if (arrayOptions === undefined || typeof arrayOptions === 'string') {
+        if (!elementSchema) {
+            throw new Error('⚠️ Zod array schema is missing _zod or _zod.def. Are you sure this is a Zod schema? If so please create an issue on Formulate\'s GitHub.');
         }
+
+        arrayMeta.items.push(createMetaState(elementSchema, options, currentDepth + 1));
+        return arrayMeta;
+    }
+
+    else if (typeof arrayOptions === 'object') {
+        const length = arrayOptions.length !== undefined ? arrayOptions.length : 1;
+        
+        for (let i = 0; i < length; i++) {
+            arrayMeta.items.push(createMetaState(elementSchema, options, currentDepth + 1));
+        }
+
+        return arrayMeta;
     }
     
-    return arrayMeta;
+    throw new Error('⚠️ Zod array schema is missing _zod or _zod.def. Are you sure this is a Zod schema? If so please create an issue on Formulate\'s GitHub.');
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// if (typeof arrays === 'object' && arrays !== null && 'method' in arrays && 
+//     arrays.method === 'populate' && arrays.length !== undefined) {
+//     console.log('Populating array with sensible defaults');
+//     const elementSchema = schema._zod && schema._zod.def && schema._zod.def.element;
+    
+//     if (elementSchema) {
+//         for (let i = 0; i < arrays.length; i++) {
+//             arrayMeta.items.push(createMetaState(elementSchema, options, currentDepth + 1));
+//         }
+//     }
+// }
