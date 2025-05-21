@@ -96,7 +96,7 @@ export function handleArrayMetaState(
     } else if (arrayOptions === 'populate') {
         initialItemCount = 1;
     } else if (typeof arrayOptions === 'object' && arrayOptions !== null) {
-        // Handle complex array options with depth configuration
+        // Handle complex array options   depth configuration
         const depthConfig = 'depth' in arrayOptions ? arrayOptions.depth : undefined;
         
         if (depthConfig) {
@@ -126,7 +126,7 @@ export function handleArrayMetaState(
 }
 
 /**
- * Synchronizes metastate with form state for arrays
+ * Synchronizes metastate   form state for arrays
  * Called when form state changes to ensure metastate structure matches
  */
 export function syncArraysWithMetaState(
@@ -209,7 +209,7 @@ function syncArrayMetaState(
 
 // if (typeof arrays === 'object' && arrays !== null && 'method' in arrays && 
 //     arrays.method === 'populate' && arrays.length !== undefined) {
-//     console.log('Populating array with sensible defaults');
+//     console.log('Populating array   sensible defaults');
 //     const elementSchema = schema._zod && schema._zod.def && schema._zod.def.element;
     
 //     if (elementSchema) {

@@ -9,7 +9,7 @@ import type { DefaultValueGenerationOptions } from "../../../../types/defaults";
  * but breaking all schemas down to their base types.
  * 
  * @param schema The Zod schema to create default values for
- * @returns An object with default values for the schema
+ * @returns An object   default values for the schema
  */
 export function createZodSchemaDefaultValues(
     schema: z.$ZodType,
@@ -74,7 +74,7 @@ function createZodTypeSchemaDefaultValue(schema: z.$ZodType, options?: DefaultVa
         }
     
     
-        // If the field is a primitive type with only one valid
+        // If the field is a primitive type   only one valid
         // value, use that value
         if (schema._zod.values &&
             schema._zod.values.size === 1

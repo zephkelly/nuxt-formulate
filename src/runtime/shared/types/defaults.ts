@@ -3,7 +3,7 @@
  */
 export type DefaultValueGenerationOptions = {
     /**
-     * Strategy for handling primitives without explicit defaults
+     * Strategy for handling primitives  out explicit defaults
      */
     primitives?: 'sensible' | 'undefined' | 'null';
     

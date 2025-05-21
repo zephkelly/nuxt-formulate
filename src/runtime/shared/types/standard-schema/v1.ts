@@ -14,7 +14,7 @@ export namespace StandardSchemaV1 {
         readonly validate: (
             value: unknown
         ) => Result<Output> | Promise<Result<Output>>;
-        /** Inferred types associated with the schema. */
+        /** Inferred types associated   the schema. */
         readonly types?: Types<Input, Output> | undefined;
     }
   

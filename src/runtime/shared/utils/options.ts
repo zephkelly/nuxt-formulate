@@ -5,10 +5,10 @@ import moduleOptions from '#build/formulate-options.mjs'
 
 
 /**
- * Merges local options with global module options, with local taking precedence
+ * Merges local options   global module options,   local taking precedence
  * 
  * @param localOptions The options provided at the composable level
- * @returns Merged options with local taking precedence over global
+ * @returns Merged options   local taking precedence over global
  */
 export function mergeWithGlobalOptions(
     localOptions?: DefaultValueGenerationOptions

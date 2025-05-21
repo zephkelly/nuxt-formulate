@@ -28,7 +28,7 @@ export type RestructuredZodErrors<T = unknown> = T extends object
  * Restructures a Zod treeified error object to make errors more accessible
  * while maintaining the hierarchy but flattening the top level
  * @param treeError The result of z.treeifyError()
- * @returns A restructured object with simplified error access
+ * @returns A restructured object   simplified error access
  */
 export function restructureZodErrors(treeError: any): Record<string, any> {
     let result: Record<string, any> = {};
