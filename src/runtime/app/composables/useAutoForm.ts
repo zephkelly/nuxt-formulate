@@ -218,30 +218,43 @@ export function useAutoForm<TSchema extends SchemaType>(
         state = ref(mergedInitialValues) as Ref<FormState>;
     }
     
-    //
+    // -- Error / Partial handling
     const mergedPartialSchema = schemas?.partial || createPartialFromSchema(schema);
 
-    const errorState = ref<any>(structuredClone(mergedInitialValues))
+    const errorState = ref<any>(undefined)
 
     function handlePartialValidation(
         partialSchema: SchemaType | Partial<InferSchemaType<TSchema>>,
         state: InferSchemaType<TSchema>
     ) {
         try {
-            return handleValidate(partialSchema, state);
+            const validatedData = handleValidate(partialSchema, state);
+            errorState.value = undefined;
+
+            return validatedData;
         }
         catch (error) {
             errorState.value = error;
+            throw error;
         }
     }
 
-    const debouncedHandlePartialValidation = debounce(handlePartialValidation, 1500);
+    const debouncedHandlePartialValidation = debounce((
+        partialSchema: SchemaType | Partial<InferSchemaType<TSchema>>,
+        state: InferSchemaType<TSchema>
+    ) => {
+        try {
+            handlePartialValidation(partialSchema, state);
+        }
+        catch (error) { }  
+    }, 1500);
 
 
     // -- Field metadata handling
     const metaState = ref(createMetaState<TSchema>(schema, defaultValueOptions));
     
     watch(state, (newValue) => {
+        console.log('State changed:', newValue);
         updateAllDirtyStates(metaState, newValue, initialStateSnapshot);
 
         debouncedHandlePartialValidation(mergedPartialSchema, state.value)
@@ -254,7 +267,7 @@ export function useAutoForm<TSchema extends SchemaType>(
 
     return {
         state,
-        meta: metaState as Ref<MetaStateType<InferSchemaType<TSchema>>>,
-        error: errorState as Ref<any>,
+        metadata: metaState as Ref<MetaStateType<InferSchemaType<TSchema>>>,
+        errors: errorState as Ref<any>,
     };
 }

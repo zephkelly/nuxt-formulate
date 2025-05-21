@@ -28,7 +28,8 @@ export function createMetaState(
         schemaType = schema.type;
     }
 
-    if (schemaType === 'interface' || schemaType === 'object') {
+    if (schemaType === 'object') {
+        console.log('handleObjectMetaState');
         return handleObjectMetaState(schema, defaultFieldMeta, options, currentDepth);
     }
     

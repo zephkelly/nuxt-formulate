@@ -1,56 +1,38 @@
 <template>
-    <form class="container" style="display: flex; flex-direction: column; gap: 1rem;">
+    <div class="container" style="display: flex; flex-direction: column; gap: 1rem;">
         <h1>Zod Test</h1>
         <input
-            v-model="state.string.isDirty"
+            v-model="zodState.string"
+            placeholder="Name"
+            type="text"
             :class="{
-                dirty: meta.string.isDirty?.isDirty$ ,
-                error: error.string.isDirty
+                dirty: zodMetadata.string.isDirty$,
+                valid: zodMetadata.string.isValid$,
             }"
-            placeholder="Name"
-            
         />
 
-        <input
-            v-model="state.number"
-            :class="{ dirty: meta.number.isDirty$ }"
-            placeholder="Name"
-        />
-
-        <p>
-            <span class="state">{{ state }}</span>
-        </p>
-    </form>
+        <p>{{ zodErrors?.string }}</p>
+    </div>
 </template>
 
 <script lang="ts" setup>
 // Zod testing
-import * as z from 'zod'
+import { z } from 'zod/v4'
 
-const zodSchema = z.interface({
-    string: z.interface({
-        isDirty: z.number(),
-        numberNested: z.number(),
-    }).partial(),
+const zodSchema = z.object({
+    string: z.number(),
     number: z.number(),
-    array: z.array(z.string()),
+    int: z.int(),
+    boolean: z.boolean(),
+    date: z.date(),
+    bigint: z.bigint(),
 })
 
 const {
-    state,
-    meta,
-    error
-} = useAutoForm(zodSchema, {
-
-})
-
-watch(error, (newError) => {
-    console.error('Error', newError.string)
-}, { deep: true, immediate: true })
-
-watch(state, (newState) => {
-    console.log('Meta', meta.value)
-}, { deep: true, immediate: true })
+    state: zodState,
+    metadata: zodMetadata,
+    errors: zodErrors,
+} = useAutoForm(zodSchema)
 </script>
 
 <style lang="css">
@@ -63,16 +45,11 @@ p {
 }
 
 input {
-    outline: none;
-    border: 4px solid white;
-    border-radius: 6px;
+    &.dirty {
+        border: 4px solid purple;
+    }
+    &.valid {
+        border: 4px solid green;
+    }
 }
-
-input.dirty {
-    border-color: purple;    
-}
-
-input.error {
-    border-color: red;
-} 
 </style>

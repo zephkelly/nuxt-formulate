@@ -1,4 +1,4 @@
-import * as z from "@zod/core"
+import * as z from '@zod/core';
 
 import type { DefaultValueGenerationOptions } from "../../../../types/defaults";
 
@@ -12,7 +12,7 @@ import type { DefaultValueGenerationOptions } from "../../../../types/defaults";
  * @returns An object with default values for the schema
  */
 export function createZodSchemaDefaultValues(
-    schema: z.$ZodAny,
+    schema: z.$ZodType,
     options?: DefaultValueGenerationOptions,
     currentDepth: number = 0
 ): any {
@@ -27,9 +27,9 @@ export function createZodSchemaDefaultValues(
     }
     
 
-    if (schemaType === 'interface') {
+    if (schemaType === 'object') {
         //@ts-ignore - We know the type is an interface
-        return handleZodInterface(schema as z.$ZodInterface, options, currentDepth);
+        return handleZodObject(schema, options, currentDepth);
     }
     
     if (schemaType === 'array') {
@@ -298,9 +298,9 @@ function generateSensibleArrayItems(
 }
 
 
-// $ZodInterface
-function handleZodInterface(
-    schema: z.$ZodInterface,
+// $ZodObject
+function handleZodObject(
+    schema: z.$ZodObject,
     options?: DefaultValueGenerationOptions,
     currentDepth: number = 0
 ): any {
@@ -308,13 +308,13 @@ function handleZodInterface(
         schema._zod.def &&
         schema._zod.def.shape
     ) {
-        const interfaceSchemaShape = schema._zod.def.shape;
+        const objectSchemaShape = schema._zod.def.shape;
 
         const defaults: Record<string, any> = {};
     
-        for (const key in interfaceSchemaShape) {
+        for (const key in objectSchemaShape) {
             defaults[key] = createZodSchemaDefaultValues(
-                interfaceSchemaShape[key],
+                objectSchemaShape[key],
                 options,
                 currentDepth + 1
             );
