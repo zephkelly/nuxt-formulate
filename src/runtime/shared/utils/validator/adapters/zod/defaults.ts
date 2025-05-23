@@ -1,4 +1,4 @@
-import * as z from '@zod/core';
+import * as z from 'zod/v4/core';
 
 import type { DefaultValueGenerationOptions } from "../../../../types/defaults";
 
@@ -50,7 +50,7 @@ export function createZodSchemaDefaultValues(
 // Helper functions
 // -----------------------------------------------------------------------------
 
-// $ZodType
+// ZodType
 function createZodTypeSchemaDefaultValue(schema: z.$ZodType, options?: DefaultValueGenerationOptions): any {
     const { primitives = 'sensible' } = options || {};
 
@@ -74,18 +74,13 @@ function createZodTypeSchemaDefaultValue(schema: z.$ZodType, options?: DefaultVa
         }
     
     
-        // If the field is a primitive type   only one valid
+        // If the field is a primitive type with only one valid
         // value, use that value
         if (schema._zod.values &&
             schema._zod.values.size === 1
         ) {
             const primitiveValue = schema._zod.values.values().next().value;
-
-            //if the value is not null or undefined, then this is a literal
-            // we should have special handling for literal values in the default
-            // options
-
-            return schema._zod.values.values().next().value;
+            return primitiveValue;
         }
 
         return createZodTypeSensibleDefaultValue(schema._zod.def)
@@ -179,7 +174,8 @@ function createZodTypeSensibleDefaultValue(fieldDefinition: z.$ZodTypeDef): any 
             return undefined;
         case 'pipe':
             return undefined;
-
+        case 'prefault':
+            return undefined;
         default:
             const exhaustiveCheck: never = fieldDefinition.type;
             throw new Error(`⚠️ Internal Formulate error: New unhandled Zod type: ${exhaustiveCheck}`);
