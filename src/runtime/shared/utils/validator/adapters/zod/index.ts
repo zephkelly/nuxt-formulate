@@ -1,4 +1,4 @@
-import * as z from '@zod/core';
+import * as z from 'zod/v4/core';
 import { registerAdapter } from '../../adapter-registry';
 
 import type { SchemaAdapter } from "../../../../types/schema/adapter";
@@ -10,6 +10,7 @@ import { handleZodSchemaValidationErrors } from "./errors";
 
 import type { DefaultValueGenerationOptions } from '../../../../types/defaults';
 import { handleZodValidate } from './validate';
+
 
 
 /*

@@ -49,10 +49,10 @@
     "vue-tsc": "^2.2.10"
   },
   "peerDependencies": {
-    "@zod/core": "^0.11.6"
+    "zod": "^3.25.8"
   },
   "peerDependenciesMeta": {
-    "@zod/core": {
+    "zod": {
       "optional": true
     }
   }

@@ -1,5 +1,6 @@
-import * as z from '@zod/core';
+import * as z from 'zod/v4/core';
 import { handleZodSchemaValidationErrors } from './errors';
+
 
 
 export function handleZodValidate(schema: z.$ZodAny, state: z.infer<typeof schema>): z.infer<typeof schema> | Record<string, string> {
