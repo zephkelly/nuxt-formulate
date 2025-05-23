@@ -10,8 +10,7 @@ node_modules
 .cache
 
 # Yarn
-**/.yarn/cache
-**/.yarn/*state*
+pnpm-lock.yaml
 
 # Generated dirs
 dist
