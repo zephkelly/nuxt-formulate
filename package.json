@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-form-utils",
+  "name": "nuxt-formulate",
   "version": "0.0.1",
   "description": "A schema-drive form library for Nuxt",
   "repository": "https://github.com/zephkelly/nuxt-formulate",
