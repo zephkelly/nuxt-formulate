@@ -11,7 +11,36 @@
                 }"
         />
         <p>{{ zodErrors?.string }}</p>
-        {{ zodErrors }}
+
+        <input 
+            v-model="zodState.number"
+            placeholder="Number"
+            type="number"
+            :class="{
+                dirty: zodMetadata.number.isDirty$,
+                }"
+        />
+        <p>{{ zodErrors?.number }}</p>
+
+        <input 
+            v-model="zodState.int"
+            placeholder="Int"
+            type="number"
+            :class="{
+                dirty: zodMetadata.int.isDirty$,
+                }"
+        />
+        <p>{{ zodErrors?.int }}</p>
+
+        <input 
+            v-model="zodState.boolean"
+            placeholder="Boolean"
+            type="checkbox"
+            :class="{
+                dirty: zodMetadata.boolean.isDirty$,
+                }"
+        />
+        <p>{{ zodErrors?.boolean }}</p>
 
 
     </div>
