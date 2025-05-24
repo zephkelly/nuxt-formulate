@@ -2,7 +2,7 @@
     <div class="container" style="display: flex; flex-direction: column; gap: 1rem;">
         <h1>Zod Test</h1>
         <p>{{ zodState }}</p>
-
+        <button @click="zodState.push({})">Add</button>
         <div class="container" v-for="(item, index) in zodState" :key="index">
             <input 
                 v-model="zodState[index].string"

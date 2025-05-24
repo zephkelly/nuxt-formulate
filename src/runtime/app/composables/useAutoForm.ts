@@ -1,5 +1,5 @@
 
-import { type Ref, ref, watch } from 'vue';
+import { type Ref, ref, watch, toRaw } from 'vue';
 import { useState } from 'nuxt/app';
 
 import { debounce } from '../../shared/utils/debounce';
@@ -70,7 +70,6 @@ export type FormulateOptions<TSchema extends SchemaType> = {
 
 
 // -- Composable Parameters
-// -----------------------------------------------------------------------------
 type NormalisedFormulateParams<TSchema extends SchemaType> = {
     schema: TSchema;
     externalRef?: Ref<InferSchemaType<TSchema>>;
@@ -257,29 +256,34 @@ export function useAutoForm<TSchema extends SchemaType>(
     const metaState = ref(createMetaState<TSchema>(schema, defaultValueOptions));
     
     watch(state, (newValue) => {
-        // 1. First sync the metastate structure   the form state
+        // If we appended new items to the array, we need to ensure that the metastate initial
+        // snapshot is updated to match the new length of the array
+        if (Array.isArray(newValue) && Array.isArray(initialStateSnapshot)) {
+            if (newValue.length > initialStateSnapshot.length) {
+                for (let i = initialStateSnapshot.length; i < newValue.length; i++) {
+                    initialStateSnapshot.push(structuredClone(toRaw(newValue[i])));
+                }
+            }
+        }
+
+        // 1. Sync the metastate structure with the form state
         syncArraysWithMetaState(metaState.value, newValue, schema, defaultValueOptions);
-        
+
+
         // 2. Update dirty states
         updateAllDirtyStates(metaState, newValue, initialStateSnapshot);
-        
-        // 3. Run immediate validation and update validation states
+
+        // 3. Validate and update valid metastates
         try {
             handlePartialValidation(mergedPartialSchema, state.value);
-            // Update validation states after successful validation
             updateValidationStates(metaState.value, true, undefined);
-        } catch (error) {
-            // Update validation states   errors
+        }
+        catch (error) {
             updateValidationStates(metaState.value, false, errorState.value);
         }
         
-        // 4. Run debounced validation for UI responsiveness
         debouncedHandlePartialValidation(mergedPartialSchema, state.value);
     }, { deep: true });
-
-
-    
-    
 
 
     return {
