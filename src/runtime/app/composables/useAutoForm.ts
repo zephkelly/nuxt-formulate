@@ -7,6 +7,7 @@ import { debounce } from '../../shared/utils/debounce';
 import type { SchemaType, InferSchemaType } from '../../shared/types/schema';
 import type { DefaultValueGenerationOptions } from '../../shared/types/defaults';
 import type { MetaStateType } from '../../shared/types/meta';
+import type { ErrorStateType } from '../../shared/types/error';
 
 import { mergeWithGlobalOptions } from '../../shared/utils/options';
 import { updateAllDirtyStates } from '../../shared/utils/validator/meta';
@@ -47,6 +48,8 @@ export type FormulateOptions<TSchema extends SchemaType> = {
 
     /**
      * Initial state values to override defaults
+     * 
+     * @deprecated Dont use this for now, broken as
      */
     defaults?: Partial<InferSchemaType<TSchema>>;
 
@@ -223,7 +226,7 @@ export function useAutoForm<TSchema extends SchemaType>(
     // -- Error / Partial handling
     const mergedPartialSchema = schemas?.partial || createPartialFromSchema(schema);
 
-    const errorState = ref<any>(undefined)
+    const errorState = ref<ErrorStateType<InferSchemaType<TSchema>> | undefined>(undefined)
 
     function handlePartialValidation(
         partialSchema: SchemaType | Partial<InferSchemaType<TSchema>>,
@@ -288,7 +291,7 @@ export function useAutoForm<TSchema extends SchemaType>(
 
     return {
         state,
-        metadata: metaState as Ref<MetaStateType<InferSchemaType<TSchema>>>,
-        errors: errorState as Ref<any>,
+        meta: metaState as Ref<MetaStateType<InferSchemaType<TSchema>>>,
+        error: errorState as Ref<ErrorStateType<InferSchemaType<TSchema>> | undefined>,
     };
 }

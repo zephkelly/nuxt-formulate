@@ -11,6 +11,7 @@ import type { AdapterType } from './runtime/shared/types/schema/adapter'
 import type { DefaultValueGenerationOptions } from './runtime/shared/types/defaults'
 
 
+
 export interface ModuleOptions {
     /**
      * Validation libraries to be used by the module
@@ -28,7 +29,7 @@ export default defineNuxtModule<ModuleOptions>({
     defaults: {
         validators: [],
         defaultValueOptions: {
-            primitives: 'sensible',
+            method: 'sensible',
             arrays: 'empty',
         }
     },

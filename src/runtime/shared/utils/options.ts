@@ -22,8 +22,8 @@ export function mergeWithGlobalOptions(
     
     const result: DefaultValueGenerationOptions = { ...globalOptions }
     
-    if (localOptions.primitives !== undefined) {
-        result.primitives = localOptions.primitives
+    if (localOptions.method !== undefined) {
+        result.method = localOptions.method
     }
     
     if (localOptions.arrays !== undefined) {
