@@ -52,15 +52,15 @@ export function createZodSchemaDefaultValues(
 
 // ZodType
 function createZodTypeSchemaDefaultValue(schema: z.$ZodType, options?: DefaultValueGenerationOptions): any {
-    const { primitives = 'sensible' } = options || {};
+    const { method = 'sensible' } = options || {};
 
-    if (primitives === 'undefined') {
+    if (method === 'undefined') {
         return undefined;
     }
-    else if (primitives === 'null') {
+    else if (method === 'null') {
         return null;
     }
-    else if (primitives === 'sensible') {
+    else if (method === 'sensible') {
         if (!schema._zod) return undefined;
     
     

@@ -7,6 +7,7 @@ import { debounce } from '../../shared/utils/debounce';
 import type { SchemaType, InferSchemaType } from '../../shared/types/schema';
 import type { DefaultValueGenerationOptions } from '../../shared/types/defaults';
 import type { MetaStateType } from '../../shared/types/meta';
+import type { ErrorStateType } from '../../shared/types/error';
 
 import { mergeWithGlobalOptions } from '../../shared/utils/options';
 import { updateAllDirtyStates } from '../../shared/utils/validator/meta';
@@ -47,6 +48,8 @@ export type FormulateOptions<TSchema extends SchemaType> = {
 
     /**
      * Initial state values to override defaults
+     * 
+     * @deprecated Dont use this for now, broken as
      */
     defaults?: Partial<InferSchemaType<TSchema>>;
 
@@ -196,7 +199,7 @@ export function useAutoForm<TSchema extends SchemaType>(
         defaultValueOptions
     );
 
-    const initialStateSnapshot = structuredClone(mergedInitialValues);
+    const initialStateSnapshot = ref<InferSchemaType<TSchema>>(structuredClone(mergedInitialValues));
 
 
     // -- State handling
@@ -223,7 +226,7 @@ export function useAutoForm<TSchema extends SchemaType>(
     // -- Error / Partial handling
     const mergedPartialSchema = schemas?.partial || createPartialFromSchema(schema);
 
-    const errorState = ref<any>(undefined)
+    const errorState = ref<ErrorStateType<InferSchemaType<TSchema>> | undefined>(undefined)
 
     function handlePartialValidation(
         partialSchema: SchemaType | Partial<InferSchemaType<TSchema>>,
@@ -241,54 +244,37 @@ export function useAutoForm<TSchema extends SchemaType>(
         }
     }
 
-    const debouncedHandlePartialValidation = debounce((
-        partialSchema: SchemaType | Partial<InferSchemaType<TSchema>>,
-        state: InferSchemaType<TSchema>
-    ) => {
-        try {
-            handlePartialValidation(partialSchema, state);
-        }
-        catch (error) { }  
-    }, 1500);
+    // const debouncedHandlePartialValidation = debounce((
+    //     partialSchema: SchemaType | Partial<InferSchemaType<TSchema>>,
+    //     state: InferSchemaType<TSchema>
+    // ) => {
+       
+    // }, 1500);
 
 
     // -- Field metadata handling
     const metaState = ref(createMetaState<TSchema>(schema, defaultValueOptions));
     
     watch(state, (newValue) => {
-        // If we appended new items to the array, we need to ensure that the metastate initial
-        // snapshot is updated to match the new length of the array
-        if (Array.isArray(newValue) && Array.isArray(initialStateSnapshot)) {
-            if (newValue.length > initialStateSnapshot.length) {
-                for (let i = initialStateSnapshot.length; i < newValue.length; i++) {
-                    initialStateSnapshot.push(structuredClone(toRaw(newValue[i])));
-                }
-            }
-        }
+        syncArraysWithMetaState(metaState.value, newValue, initialStateSnapshot as Ref<InferSchemaType<TSchema>>, schema, defaultValueOptions);
 
-        // 1. Sync the metastate structure with the form state
-        syncArraysWithMetaState(metaState.value, newValue, schema, defaultValueOptions);
-
-
-        // 2. Update dirty states
         updateAllDirtyStates(metaState, newValue, initialStateSnapshot);
 
-        // 3. Validate and update valid metastates
         try {
-            handlePartialValidation(mergedPartialSchema, state.value);
+            handlePartialValidation(mergedPartialSchema, newValue);
             updateValidationStates(metaState.value, true, undefined);
         }
         catch (error) {
             updateValidationStates(metaState.value, false, errorState.value);
-        }
-        
-        debouncedHandlePartialValidation(mergedPartialSchema, state.value);
+        }  
+
+        // debouncedHandlePartialValidation(mergedPartialSchema, state.value);
     }, { deep: true });
 
 
     return {
         state,
-        metadata: metaState as Ref<MetaStateType<InferSchemaType<TSchema>>>,
-        errors: errorState as Ref<any>,
+        meta: metaState as Ref<MetaStateType<InferSchemaType<TSchema>>>,
+        error: errorState as Ref<ErrorStateType<InferSchemaType<TSchema>> | undefined>,
     };
 }

@@ -1,5 +1,7 @@
 import * as z from 'zod/v4/core';
 
+import type { ErrorStateType } from '~/src/runtime/shared/types/error';
+
 
 
 /**
@@ -30,11 +32,10 @@ export type RestructuredZodErrors<T = unknown> = T extends object
  * @param treeError The result of z.treeifyError()
  * @returns A restructured object   simplified error access
  */
-export function restructureZodErrors(treeError: any): Record<string, any> {
+export function restructureZodErrors<T = unknown>(treeError: any): ErrorStateType<T> {
     let result: Record<string, any> = {};
     
     // Handle current item errors
-    // -------------------------------------------------------------------------
     if (treeError.properties) {
         Object.entries(treeError.properties).forEach(([key, value]) => {
             result[key] = restructureZodErrors(value);
@@ -42,7 +43,6 @@ export function restructureZodErrors(treeError: any): Record<string, any> {
     }
     
     // Handle nested item errors
-    // -------------------------------------------------------------------------
     if (treeError.items) {
         result.items = [];
         
@@ -61,11 +61,13 @@ export function restructureZodErrors(treeError: any): Record<string, any> {
         result = treeError.errors[0];
     }
     
-    return result;
+    return result  as ErrorStateType<T>;
 }
 
 
-export function handleZodSchemaValidationErrors(error: z.$ZodError): Record<string, any> {
+export function handleZodSchemaValidationErrors<T = unknown>(
+    error: z.$ZodError
+): ErrorStateType<T> {
     const tree = z.treeifyError(error);
-    return restructureZodErrors(tree);
+    return restructureZodErrors<T>(tree);
 }

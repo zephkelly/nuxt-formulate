@@ -3,9 +3,9 @@
  */
 export type DefaultValueGenerationOptions = {
     /**
-     * Strategy for handling primitives  out explicit defaults
+     * Strategy for handling method  out explicit defaults
      */
-    primitives?: 'sensible' | 'undefined' | 'null';
+    method?: 'sensible' | 'undefined' | 'null';
     
     /**
      * Strategy for handling arrays

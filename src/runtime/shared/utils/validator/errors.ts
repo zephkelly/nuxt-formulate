@@ -2,13 +2,17 @@ import { getAdapterForSchema } from './adapter-registry';
 import type { SchemaType } from '../../types/schema';
 import { type StandardSchemaV1 } from '../../types/standard-schema/v1';
 
+import type { InferSchemaType } from '../../types/schema';
+import type { ErrorStateType } from '../../types/error';
 
-export function handleValidationErrors(error: unknown, schema?: SchemaType): Record<string, any> {
+
+
+export function handleValidationErrors<TSchema extends SchemaType>(error: unknown, schema?: SchemaType): ErrorStateType<InferSchemaType<TSchema>> {
     if (schema) {
         const adapter = getAdapterForSchema(schema);
 
         if (adapter) {
-            return adapter.handleValidationErrors(error);
+            return adapter.handleValidationErrors(error) as ErrorStateType<InferSchemaType<TSchema>>;
         }
         else {
             console.log(
@@ -16,23 +20,18 @@ export function handleValidationErrors(error: unknown, schema?: SchemaType): Rec
                 '⚠️ Adapter not found for schema, using standard schema error handler'
             );
 
-            return convertStandardSchemaErrors(error as StandardSchemaV1.Issue[]);
+            return convertStandardSchemaErrors(error as StandardSchemaV1.Issue[])  as ErrorStateType<InferSchemaType<TSchema>>;
         }
     }
 
-    return { error: 'Unknown validation error' };
+    return { error: 'Unknown validation error' } as ErrorStateType<InferSchemaType<TSchema>>;
 }
 
 
 
-
-export type ErrorsFromSchema<T> = {
-    [K in keyof T]?: T[K] extends object ? ErrorsFromSchema<T[K]> : string;
-};
-
-export function convertStandardSchemaErrors(
+export function convertStandardSchemaErrors<T = unknown>(
     issues: ReadonlyArray<StandardSchemaV1.Issue>
-): Record<string, any> {
+): ErrorStateType<T> {
     const result: Record<string, any> = {};
     
     for (const issue of issues) {
@@ -62,16 +61,16 @@ export function convertStandardSchemaErrors(
         current[lastKey] = issue.message;
     }
     
-    return result;
+    return result as ErrorStateType<T>;
 }
 
 
-export function handleStandardSchemaErrors(
+export function handleStandardSchemaErrors<T = unknown>(
     error: unknown
-): { error: string } | { errors: Record<string, any> } {
+): { error: string } | { errors: ErrorStateType<T> } {
     if (error && typeof error === 'object' && 'issues' in error) {
-        return { errors: convertStandardSchemaErrors((error as any).issues) };
+        return { errors: convertStandardSchemaErrors<T>((error as any).issues) };
     }
-    
+   
     return { error: 'Unknown validation error' };
 }

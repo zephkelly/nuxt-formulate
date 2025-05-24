@@ -5,7 +5,7 @@ export default defineNuxtConfig({
             "zod"
         ],
         defaultValueOptions: {
-            primitives: 'undefined',
+            method: 'undefined',
             arrays: {
                 method: 'populate',
                 depth: {

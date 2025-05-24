@@ -1,6 +1,10 @@
-import type { Ref } from 'vue';
+import { type Ref, toRaw } from 'vue';
 import { getAdapterForSchema } from './adapter-registry';
+
 import type { DefaultValueGenerationOptions } from '../../types/defaults';
+
+import type { SchemaType } from '../../types/schema';
+import type { InferSchemaType } from '../../types/schema';
 
 import { isDeepEqual } from '../equality';
 
@@ -19,12 +23,23 @@ export function createMetaState<SchemaType>(
     return {};
 }
 
-export function syncArraysWithMetaState(
+export function syncArraysWithMetaState<TSchema extends SchemaType>(
     metaState: any,
-    state: any,
+    state: InferSchemaType<TSchema>,
+    stateSnapshot: Ref<InferSchemaType<TSchema>>,
     schema: any,
     options?: DefaultValueGenerationOptions
 ) {
+    // If schema is an array type, and we added an item to the top level array,
+    // push additional metastate item to the top level array
+    if (Array.isArray(state) && Array.isArray(stateSnapshot.value)) {
+        if (state.length > stateSnapshot.value.length) {
+            for (let i = stateSnapshot.value.length; i < state.length; i++) {
+                stateSnapshot.value.push(structuredClone(toRaw(state[i])));
+            }
+        }
+    }
+
     const adapter = getAdapterForSchema(schema);
     
     if (adapter) {
