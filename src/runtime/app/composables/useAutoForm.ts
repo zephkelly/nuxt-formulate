@@ -199,7 +199,7 @@ export function useAutoForm<TSchema extends SchemaType>(
         defaultValueOptions
     );
 
-    const initialStateSnapshot = structuredClone(mergedInitialValues);
+    const initialStateSnapshot = ref<InferSchemaType<TSchema>>(structuredClone(mergedInitialValues));
 
 
     // -- State handling
@@ -244,48 +244,31 @@ export function useAutoForm<TSchema extends SchemaType>(
         }
     }
 
-    const debouncedHandlePartialValidation = debounce((
-        partialSchema: SchemaType | Partial<InferSchemaType<TSchema>>,
-        state: InferSchemaType<TSchema>
-    ) => {
-        try {
-            handlePartialValidation(partialSchema, state);
-        }
-        catch (error) { }  
-    }, 1500);
+    // const debouncedHandlePartialValidation = debounce((
+    //     partialSchema: SchemaType | Partial<InferSchemaType<TSchema>>,
+    //     state: InferSchemaType<TSchema>
+    // ) => {
+       
+    // }, 1500);
 
 
     // -- Field metadata handling
     const metaState = ref(createMetaState<TSchema>(schema, defaultValueOptions));
     
     watch(state, (newValue) => {
-        // If we appended new items to the array, we need to ensure that the metastate initial
-        // snapshot is updated to match the new length of the array
-        if (Array.isArray(newValue) && Array.isArray(initialStateSnapshot)) {
-            if (newValue.length > initialStateSnapshot.length) {
-                for (let i = initialStateSnapshot.length; i < newValue.length; i++) {
-                    initialStateSnapshot.push(structuredClone(toRaw(newValue[i])));
-                }
-            }
-        }
+        syncArraysWithMetaState(metaState.value, newValue, initialStateSnapshot as Ref<InferSchemaType<TSchema>>, schema, defaultValueOptions);
 
-        // 1. Sync the metastate structure with the form state
-        syncArraysWithMetaState(metaState.value, newValue, schema, defaultValueOptions);
-
-
-        // 2. Update dirty states
         updateAllDirtyStates(metaState, newValue, initialStateSnapshot);
 
-        // 3. Validate and update valid metastates
         try {
-            handlePartialValidation(mergedPartialSchema, state.value);
+            handlePartialValidation(mergedPartialSchema, newValue);
             updateValidationStates(metaState.value, true, undefined);
         }
         catch (error) {
             updateValidationStates(metaState.value, false, errorState.value);
-        }
-        
-        debouncedHandlePartialValidation(mergedPartialSchema, state.value);
+        }  
+
+        // debouncedHandlePartialValidation(mergedPartialSchema, state.value);
     }, { deep: true });
 
 
