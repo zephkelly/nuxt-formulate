@@ -69,16 +69,18 @@ export function updateDirtyStateRecursively(
     
     if (Array.isArray(current)) {
         if (metaObj && 'items' in metaObj) {
-            if (current.length !== initial.length) {
-                metaObj.isDirty$ = true;
-                return true;
+            const lengthChanged = current.length !== initial.length;
+            if (lengthChanged) {
+                anyDirty = true;
             }
             
             for (let i = 0; i < current.length; i++) {
                 if (i < metaObj.items.length) {
+                    const initialItem = i < initial.length ? initial[i] : undefined;
+                    
                     const itemDirty = updateDirtyStateRecursively(
                         current[i], 
-                        initial[i], 
+                        initialItem, 
                         metaObj.items[i], 
                         [...path, `items[${i}]`]
                     );
@@ -123,7 +125,6 @@ export function updateDirtyStateRecursively(
     }
     
     if ('isDirty$' in metaObj) {
-        console.log('isDirty$', path, anyDirty);
         metaObj.isDirty$ = anyDirty || !isDeepEqual(current, initial);
     }
     

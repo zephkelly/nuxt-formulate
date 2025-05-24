@@ -34,7 +34,6 @@ export function createMetaState(
     }
     
     if (schemaType === 'array') {
-        console.log('Array schema detected');
         return handleArrayMetaState(schema, defaultFieldMeta, options, currentDepth);
     }
 
@@ -82,7 +81,6 @@ export function handleArrayMetaState(
         items: []
     };
     
-    // Ensure schema is valid
     if (!schema._zod?.def?.element) {
         throw new Error('⚠️ Zod array schema is missing _zod or _zod.def. Are you sure this is a Zod schema?');
     }
@@ -90,15 +88,15 @@ export function handleArrayMetaState(
     const elementSchema = schema._zod.def.element;
     const arrayOptions = options?.arrays;
     
-    // Determine number of initial items based on options
     let initialItemCount = 0;
     
     if (arrayOptions === undefined || arrayOptions === 'empty') {
         initialItemCount = 0;
-    } else if (arrayOptions === 'populate') {
+    }
+    else if (arrayOptions === 'populate') {
         initialItemCount = 1;
-    } else if (typeof arrayOptions === 'object' && arrayOptions !== null) {
-        // Handle complex array options   depth configuration
+    }
+    else if (typeof arrayOptions === 'object' && arrayOptions !== null) {
         const depthConfig = 'depth' in arrayOptions ? arrayOptions.depth : undefined;
         
         if (depthConfig) {
@@ -112,7 +110,7 @@ export function handleArrayMetaState(
             }
             
             if (shouldUseFallback) {
-                if (fallback === 'empty') return arrayMeta; // Empty array items
+                if (fallback === 'empty') return arrayMeta;
                 return arrayMeta;
             }
         }
@@ -139,17 +137,14 @@ export function syncArraysWithMetaState(
 ) {
     if (!metaState || !formState) return;
     
-    // Process object properties
     if (schema._zod?.def?.type === 'object' && schema._zod?.def?.shape) {
         const shape = schema._zod.def.shape;
         
         for (const key in shape) {
-            // Check if property exists in form state
             if (key in formState) {
                 const propertyValue = formState[key];
                 const propertySchema = shape[key];
                 
-                // Initialize property in metastate if it doesn't exist
                 if (!(key in metaState)) {
                     metaState[key] = createMetaState(propertySchema, options);
                 }
@@ -157,13 +152,13 @@ export function syncArraysWithMetaState(
                 // Recursively process arrays or objects
                 if (Array.isArray(propertyValue)) {
                     syncArrayMetaState(metaState[key], propertyValue, propertySchema, options);
-                } else if (propertyValue && typeof propertyValue === 'object') {
+                }
+                else if (propertyValue && typeof propertyValue === 'object') {
                     syncArraysWithMetaState(metaState[key], propertyValue, propertySchema, options);
                 }
             }
         }
     }
-    // Process array items directly
     else if (schema._zod?.def?.type === 'array' && Array.isArray(formState)) {
         syncArrayMetaState(metaState, formState, schema, options);
     }
@@ -178,7 +173,6 @@ function syncArrayMetaState(
     arraySchema: any,
     options: any
 ) {
-    // Ensure arrayMetaState has items array
     if (!arrayMetaState.items) {
         arrayMetaState.items = [];
     }
@@ -186,18 +180,17 @@ function syncArrayMetaState(
     const elementSchema = arraySchema._zod?.def?.element;
     if (!elementSchema) return;
     
-    // Resize metastate items array to match form state
+    // Add missing metastate items
     if (arrayMetaState.items.length < arrayFormState.length) {
-        // Add missing items
         for (let i = arrayMetaState.items.length; i < arrayFormState.length; i++) {
             arrayMetaState.items[i] = createMetaState(elementSchema, options);
         }
-    } else if (arrayMetaState.items.length > arrayFormState.length) {
-        // Remove extra items
+    }
+    // Remove extra items
+    else if (arrayMetaState.items.length > arrayFormState.length) {
         arrayMetaState.items.splice(arrayFormState.length);
     }
     
-    // Recursively sync each array item
     for (let i = 0; i < arrayFormState.length; i++) {
         const itemValue = arrayFormState[i];
         
@@ -206,17 +199,3 @@ function syncArrayMetaState(
         }
     }
 }
-
-
-
-// if (typeof arrays === 'object' && arrays !== null && 'method' in arrays && 
-//     arrays.method === 'populate' && arrays.length !== undefined) {
-//     console.log('Populating array   sensible defaults');
-//     const elementSchema = schema._zod && schema._zod.def && schema._zod.def.element;
-    
-//     if (elementSchema) {
-//         for (let i = 0; i < arrays.length; i++) {
-//             arrayMeta.items.push(createMetaState(elementSchema, options, currentDepth + 1));
-//         }
-//     }
-// }
