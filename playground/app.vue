@@ -7,7 +7,7 @@
             placeholder="Name"
             type="text"
             :class="{
-                dirty: zodMetadata.string.isDirty$,
+                dirty: zodMetadata.string?.isDirty$,
                 }"
         />
         <p>{{ zodErrors?.string }}</p>
@@ -17,7 +17,7 @@
             placeholder="Number"
             type="number"
             :class="{
-                dirty: zodMetadata.number.isDirty$,
+                dirty: zodMetadata.number?.isDirty$,
                 }"
         />
         <p>{{ zodErrors?.number }}</p>
@@ -27,7 +27,7 @@
             placeholder="Int"
             type="number"
             :class="{
-                dirty: zodMetadata.int.isDirty$,
+                dirty: zodMetadata.int?.isDirty$,
                 }"
         />
         <p>{{ zodErrors?.int }}</p>
@@ -37,7 +37,7 @@
             placeholder="Boolean"
             type="checkbox"
             :class="{
-                dirty: zodMetadata.boolean.isDirty$,
+                dirty: zodMetadata.boolean?.isDirty$,
                 }"
         />
         <p>{{ zodErrors?.boolean }}</p>
@@ -56,11 +56,19 @@ const zodSchema = z.object({
     boolean: z.boolean(),
 })
 
+
 const {
     state: zodState,
     meta: zodMetadata,
     error: zodErrors,
 } = useAutoForm(zodSchema)
+
+const validator = useValidator(zodSchema)
+
+watch(zodState, (newValue) => {
+    const data = validator.validatePartial(zodState.value)
+    console.log('Data', data)
+}, { deep: true })
 
 watch(zodErrors, (newValue) => {
     console.log('zodErrors', newValue)
