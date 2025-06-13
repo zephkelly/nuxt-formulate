@@ -19,9 +19,9 @@ export function useValidator<TSchema extends SchemaType>(schema: TSchema): Valid
 
     function validate(data: any | Ref<any>): StandardSchemaV1.Result<unknown> | Promise<StandardSchemaV1.Result<unknown>> {
         if (data.value !== undefined) {
-            return schema['~standard']?.validate(data.value);
+            return handleValidate(schema, data.value);
         }
-        return schema['~standard']?.validate(data);
+        return handleValidate(schema, data);
     }
 
     function validateArray(data: any[] | Ref<any[]>): (StandardSchemaV1.Result<unknown> | Promise<StandardSchemaV1.Result<unknown>>)[] {
@@ -51,10 +51,10 @@ export function useValidator<TSchema extends SchemaType>(schema: TSchema): Valid
 
     function validatePartial(data: any | Ref<any>): any {
         if (data.value !== undefined) {
-            return partialSchema['~standard']?.validate(data.value);
+            return handleValidate(partialSchema, data.value);
         }
 
-        return partialSchema['~standard']?.validate(data);
+        return handleValidate(partialSchema, data);
     }
 
     function validatePartialArray(data: any[] | Ref<any[]>): (StandardSchemaV1.Result<unknown> | Promise<StandardSchemaV1.Result<unknown>>)[] {

@@ -66,8 +66,14 @@ const {
 const validator = useValidator(zodSchema)
 
 watch(zodState, (newValue) => {
-    const data = validator.validatePartial(zodState.value)
-    console.log('Data', data)
+    try {
+        const data = validator.validatePartial(zodState.value)
+
+        console.log('Data', data)
+    }
+    catch (error) {
+        console.error('Validation error:', error)
+    }
 }, { deep: true })
 
 watch(zodErrors, (newValue) => {
