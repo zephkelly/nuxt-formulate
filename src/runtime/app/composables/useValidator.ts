@@ -1,27 +1,13 @@
 import { type Ref } from "vue";
-import { createPartialSchema, handleValidate } from "../../shared/utils/validator";
+
 import type { SchemaType, InferSchemaType } from '../../shared/types/schema';
+import type { ErrorStateType } from '../../shared/types/error';
+
+import { createPartialSchema, handleValidate } from "../../shared/utils/core";
+
+import { ValidationError, type SafeValidationResult } from "../../shared/types/validation-result";
 
 
-export type ErrorStateType<T> = T extends any ? (
-    T extends (infer U)[] ? {
-        error?: string;
-        items?: ErrorStateType<U>[];
-    } :
-    T extends object ? {
-        error?: string;
-    } & { [K in keyof T]?: ErrorStateType<T[K]> } : string
-) : never;
-
-export type SafeValidationResult<T> = {
-    success: true;
-    data: T;
-    errors?: never;
-} | {
-    success: false;
-    data?: never;
-    errors: ErrorStateType<T>;
-};
 
 export interface Validator<TSchema extends SchemaType> {
     validate: (data: any | Ref<any>) => InferSchemaType<TSchema>;
@@ -43,6 +29,12 @@ export interface Validator<TSchema extends SchemaType> {
     safeAsyncValidateArray: (data: any[] | Ref<any[]>) => Promise<SafeValidationResult<InferSchemaType<TSchema>>[]>;
     safeAsyncValidatePartial: (data: any | Ref<any>) => Promise<SafeValidationResult<Partial<InferSchemaType<TSchema>>>>;
     safeAsyncValidatePartialArray: (data: any[] | Ref<any[]>) => Promise<SafeValidationResult<Partial<InferSchemaType<TSchema>>>[]>;
+    
+    isValidationError: (error: unknown) => error is ValidationError<InferSchemaType<TSchema>>;
+    isPartialValidationError: (error: unknown) => error is ValidationError<Partial<InferSchemaType<TSchema>>>;
+    
+    ValidationError: typeof ValidationError<InferSchemaType<TSchema>>;
+    PartialValidationError: typeof ValidationError<Partial<InferSchemaType<TSchema>>>;
 }
 
 function unwrapRef<T>(data: T | Ref<T>): T {
@@ -54,7 +46,6 @@ function ensureArray<T>(data: T[] | Ref<T[]>): T[] {
     if (!Array.isArray(arrayData)) {
         throw new Error("Expected an array of data to validate.");
     }
-
     return arrayData;
 }
 
@@ -63,13 +54,22 @@ export function useValidator<TSchema extends SchemaType>(schema: TSchema): Valid
 
     function validate(data: any | Ref<any>): InferSchemaType<TSchema> {
         const value = unwrapRef(data);
-        const result = handleValidate(schema, value);
         
-        if (result instanceof Promise) {
-            throw new Error('Schema validation returned a Promise. Use asyncValidate() for asynchronous validation.');
+        try {
+            const result = handleValidate(schema, value);
+            
+            if (result instanceof Promise) {
+                throw new Error('Schema validation returned a Promise. Use asyncValidate() for asynchronous validation.');
+            }
+            
+            return result;
         }
-        
-        return result;
+        catch (error) {
+            if (error instanceof ValidationError) {
+                throw error;
+            }
+            throw new ValidationError<InferSchemaType<TSchema>>(error as ErrorStateType<InferSchemaType<TSchema>>);
+        }
     }
 
     function validateArray(data: any[] | Ref<any[]>): InferSchemaType<TSchema>[] {
@@ -79,13 +79,22 @@ export function useValidator<TSchema extends SchemaType>(schema: TSchema): Valid
 
     function validatePartial(data: any | Ref<any>): Partial<InferSchemaType<TSchema>> {
         const value = unwrapRef(data);
-        const result = handleValidate(partialSchema, value);
         
-        if (result instanceof Promise) {
-            throw new Error('Schema validation returned a Promise. Use asyncValidatePartial() for asynchronous validation.');
+        try {
+            const result = handleValidate(partialSchema, value);
+            
+            if (result instanceof Promise) {
+                throw new Error('Schema validation returned a Promise. Use asyncValidatePartial() for asynchronous validation.');
+            }
+            
+            return result;
         }
-        
-        return result;
+        catch (error) {
+            if (error instanceof ValidationError) {
+                throw error;
+            }
+            throw new ValidationError<Partial<InferSchemaType<TSchema>>>(error as ErrorStateType<Partial<InferSchemaType<TSchema>>>);
+        }
     }
 
     function validatePartialArray(data: any[] | Ref<any[]>): Partial<InferSchemaType<TSchema>>[] {
@@ -95,13 +104,23 @@ export function useValidator<TSchema extends SchemaType>(schema: TSchema): Valid
 
     async function asyncValidate(data: any | Ref<any>): Promise<InferSchemaType<TSchema>> {
         const value = unwrapRef(data);
-        const result = handleValidate(schema, value);
         
-        if (result instanceof Promise) {
-            return await result;
+        try {
+            const result = handleValidate(schema, value);
+            
+            if (result instanceof Promise) {
+                return await result;
+            }
+            
+            return result;
         }
-        
-        return result;
+        catch (error) {
+            if (error instanceof ValidationError) {
+                throw error;
+            }
+
+            throw new ValidationError<InferSchemaType<TSchema>>(error as ErrorStateType<InferSchemaType<TSchema>>);
+        }
     }
 
     async function asyncValidateArray(data: any[] | Ref<any[]>): Promise<InferSchemaType<TSchema>[]> {
@@ -112,13 +131,22 @@ export function useValidator<TSchema extends SchemaType>(schema: TSchema): Valid
 
     async function asyncValidatePartial(data: any | Ref<any>): Promise<Partial<InferSchemaType<TSchema>>> {
         const value = unwrapRef(data);
-        const result = handleValidate(partialSchema, value);
         
-        if (result instanceof Promise) {
-            return await result;
+        try {
+            const result = handleValidate(partialSchema, value);
+            
+            if (result instanceof Promise) {
+                return await result;
+            }
+            
+            return result;
         }
-        
-        return result;
+        catch (error) {
+            if (error instanceof ValidationError) {
+                throw error;
+            }
+            throw new ValidationError<Partial<InferSchemaType<TSchema>>>(error as ErrorStateType<Partial<InferSchemaType<TSchema>>>);
+        }
     }
 
     async function asyncValidatePartialArray(data: any[] | Ref<any[]>): Promise<Partial<InferSchemaType<TSchema>>[]> {
@@ -135,10 +163,13 @@ export function useValidator<TSchema extends SchemaType>(schema: TSchema): Valid
                 data: result
             };
         }
-        catch (errors) {
+        catch (error) {
+            const errorState = error instanceof ValidationError 
+                ? error.errors as ErrorStateType<InferSchemaType<TSchema>>
+                : error as ErrorStateType<InferSchemaType<TSchema>>;
             return {
                 success: false,
-                errors: errors as ErrorStateType<InferSchemaType<TSchema>>
+                errors: errorState
             };
         }
     }
@@ -156,10 +187,13 @@ export function useValidator<TSchema extends SchemaType>(schema: TSchema): Valid
                 data: result
             };
         }
-        catch (errors) {
+        catch (error) {
+            const errorState = error instanceof ValidationError 
+                ? error.errors as ErrorStateType<Partial<InferSchemaType<TSchema>>>
+                : error as ErrorStateType<Partial<InferSchemaType<TSchema>>>;
             return {
                 success: false,
-                errors: errors as ErrorStateType<Partial<InferSchemaType<TSchema>>>
+                errors: errorState
             };
         }
     }
@@ -177,10 +211,13 @@ export function useValidator<TSchema extends SchemaType>(schema: TSchema): Valid
                 data: result
             };
         }
-        catch (errors) {
+        catch (error) {
+            const errorState = error instanceof ValidationError 
+                ? error.errors as ErrorStateType<InferSchemaType<TSchema>>
+                : error as ErrorStateType<InferSchemaType<TSchema>>;
             return {
                 success: false,
-                errors: errors as ErrorStateType<InferSchemaType<TSchema>>
+                errors: errorState
             };
         }
     }
@@ -199,10 +236,13 @@ export function useValidator<TSchema extends SchemaType>(schema: TSchema): Valid
                 data: result
             };
         }
-        catch (errors) {
+        catch (error) {
+            const errorState = error instanceof ValidationError 
+                ? error.errors as ErrorStateType<Partial<InferSchemaType<TSchema>>>
+                : error as ErrorStateType<Partial<InferSchemaType<TSchema>>>;
             return {
                 success: false,
-                errors: errors as ErrorStateType<Partial<InferSchemaType<TSchema>>>
+                errors: errorState
             };
         }
     }
@@ -211,6 +251,14 @@ export function useValidator<TSchema extends SchemaType>(schema: TSchema): Valid
         const arrayData = ensureArray(data);
         const results = await Promise.all(arrayData.map(item => safeAsyncValidatePartial(item)));
         return results;
+    }
+
+    function isValidationError(error: unknown): error is ValidationError<InferSchemaType<TSchema>> {
+        return error instanceof ValidationError;
+    }
+
+    function isPartialValidationError(error: unknown): error is ValidationError<Partial<InferSchemaType<TSchema>>> {
+        return error instanceof ValidationError;
     }
 
     return {
@@ -232,6 +280,12 @@ export function useValidator<TSchema extends SchemaType>(schema: TSchema): Valid
         safeAsyncValidate,
         safeAsyncValidateArray,
         safeAsyncValidatePartial,
-        safeAsyncValidatePartialArray
+        safeAsyncValidatePartialArray,
+
+        isValidationError,
+        isPartialValidationError,
+
+        ValidationError: ValidationError as typeof ValidationError<InferSchemaType<TSchema>>,
+        PartialValidationError: ValidationError as typeof ValidationError<Partial<InferSchemaType<TSchema>>>
     };
 }

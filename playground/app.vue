@@ -48,7 +48,6 @@
 
 <script lang="ts" setup>
 import { z } from 'zod/v4'
-import type { StandardSchemaV1 } from '../src/runtime/shared/types/standard-schema/v1'
 
 const zodSchema = z.object({
     string: z.number(),
@@ -72,7 +71,12 @@ watch(zodState, (newValue) => {
         console.log('Validation successful:', data)
     }
     catch (error) {
-        console.error('Validation error:', error)
+        if (error instanceof validator.ValidationError) {
+            console.error('Validation failed:', error.errors)
+        }
+        else {
+            console.error('Unexpected error:', error)
+        }
     }
 }, { deep: true })
 

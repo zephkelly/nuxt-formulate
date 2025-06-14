@@ -10,16 +10,16 @@ import type { MetaStateType } from '../../shared/types/meta';
 import type { ErrorStateType } from '../../shared/types/error';
 
 import { mergeWithGlobalOptions } from '../../shared/utils/options';
-import { updateAllDirtyStates } from '../../shared/utils/validator/meta';
+import { updateAllDirtyStates } from '../../shared/utils/core/meta';
 import {
     createDefaultValues,
     createPartialSchema,
     createMetaState,
     syncArraysWithMetaState,
     handleValidate
-} from '../../shared/utils/validator';
+} from '../../shared/utils/core';
 
-import { updateValidationStates } from '../../shared/utils/validator/meta';
+import { updateValidationStates } from '../../shared/utils/core/meta';
 
 
 
