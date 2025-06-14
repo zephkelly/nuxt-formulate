@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.0.6
+
+[compare changes](https://github.com/zephkelly/nuxt-formulate/compare/v0.0.5...v0.0.6)
+
+### 🩹 Fixes
+
+- Remove console log in internal adapter registry ([83658f1](https://github.com/zephkelly/nuxt-formulate/commit/83658f1))
+
+### ❤️ Contributors
+
+- Zephkelly <masterevank@gmail.com>
+
 ## v0.0.5
 
 [compare changes](https://github.com/zephkelly/nuxt-formulate/compare/v0.0.4...v0.0.5)
