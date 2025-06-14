@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.0.5
+
+[compare changes](https://github.com/zephkelly/nuxt-formulate/compare/v0.0.4...v0.0.5)
+
+### 🚀 Enhancements
+
+- Add server side getValidator utility with tree-shakeable server-side schema adapters ([5d18419](https://github.com/zephkelly/nuxt-formulate/commit/5d18419))
+
+### 🏡 Chore
+
+- Extract useValidator functionality into FormulateValidator class ([e6eb985](https://github.com/zephkelly/nuxt-formulate/commit/e6eb985))
+
+### ❤️ Contributors
+
+- Zephkelly <masterevank@gmail.com>
+
 ## v0.0.4
 
 [compare changes](https://github.com/zephkelly/nuxt-formulate/compare/v0.0.3...v0.0.4)
