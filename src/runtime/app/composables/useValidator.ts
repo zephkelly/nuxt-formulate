@@ -5,37 +5,11 @@ import type { ErrorStateType } from '../../shared/types/error';
 
 import { createPartialSchema, handleValidate } from "../../shared/utils/core";
 
-import { ValidationError, type SafeValidationResult } from "../../shared/types/validation-result";
+import { type Validator, type SafeValidationResult, ValidationError } from "../../shared/types/validator";
 
 
 
-export interface Validator<TSchema extends SchemaType> {
-    validate: (data: any | Ref<any>) => InferSchemaType<TSchema>;
-    validateArray: (data: any[] | Ref<any[]>) => InferSchemaType<TSchema>[];
-    validatePartial: (data: any | Ref<any>) => Partial<InferSchemaType<TSchema>>;
-    validatePartialArray: (data: any[] | Ref<any[]>) => Partial<InferSchemaType<TSchema>>[];
-    
-    asyncValidate: (data: any | Ref<any>) => Promise<InferSchemaType<TSchema>>;
-    asyncValidateArray: (data: any[] | Ref<any[]>) => Promise<InferSchemaType<TSchema>[]>;
-    asyncValidatePartial: (data: any | Ref<any>) => Promise<Partial<InferSchemaType<TSchema>>>;
-    asyncValidatePartialArray: (data: any[] | Ref<any[]>) => Promise<Partial<InferSchemaType<TSchema>>[]>;
 
-    safeValidate: (data: any | Ref<any>) => SafeValidationResult<InferSchemaType<TSchema>>;
-    safeValidateArray: (data: any[] | Ref<any[]>) => SafeValidationResult<InferSchemaType<TSchema>>[];
-    safeValidatePartial: (data: any | Ref<any>) => SafeValidationResult<Partial<InferSchemaType<TSchema>>>;
-    safeValidatePartialArray: (data: any[] | Ref<any[]>) => SafeValidationResult<Partial<InferSchemaType<TSchema>>>[];
-    
-    safeAsyncValidate: (data: any | Ref<any>) => Promise<SafeValidationResult<InferSchemaType<TSchema>>>;
-    safeAsyncValidateArray: (data: any[] | Ref<any[]>) => Promise<SafeValidationResult<InferSchemaType<TSchema>>[]>;
-    safeAsyncValidatePartial: (data: any | Ref<any>) => Promise<SafeValidationResult<Partial<InferSchemaType<TSchema>>>>;
-    safeAsyncValidatePartialArray: (data: any[] | Ref<any[]>) => Promise<SafeValidationResult<Partial<InferSchemaType<TSchema>>>[]>;
-    
-    isValidationError: (error: unknown) => error is ValidationError<InferSchemaType<TSchema>>;
-    isPartialValidationError: (error: unknown) => error is ValidationError<Partial<InferSchemaType<TSchema>>>;
-    
-    ValidationError: typeof ValidationError<InferSchemaType<TSchema>>;
-    PartialValidationError: typeof ValidationError<Partial<InferSchemaType<TSchema>>>;
-}
 
 function unwrapRef<T>(data: T | Ref<T>): T {
     return (data as Ref<T>)?.value !== undefined ? (data as Ref<T>).value : (data as T);

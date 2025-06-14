@@ -47,6 +47,9 @@ export default ${JSON.stringify(_options)}
 
         addImportsDir(resolver.resolve('runtime/app/composables'))
         addPlugin(resolver.resolve('runtime/plugin'))
+
+        // Provide validator types globally under #nuxt-formulate/validator
+        _nuxt.options.alias['#nuxt-formulate'] = resolver.resolve('runtime/index')
     },
 })
 
@@ -71,7 +74,7 @@ function setupValidationAdapters(resolver: Resolver, _options: ModuleOptions): v
         write: true,
         getContents: () => {
             const imports = requestedAdapters.map((adapter) => {
-                const adapterPath = resolver.resolve(`runtime/shared/utils/validator/adapters/${adapter}/index`)
+                const adapterPath = resolver.resolve(`runtime/shared/utils/core/adapters/${adapter}/index`)
                 const safeAdapterName = adapter.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())
                 return `import { register as register${safeAdapterName} } from '${adapterPath}'`
             }).join('\n')

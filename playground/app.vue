@@ -49,6 +49,8 @@
 <script lang="ts" setup>
 import { z } from 'zod/v4'
 
+import { ValidationError } from '#nuxt-formulate';
+
 const zodSchema = z.object({
     string: z.number(),
     number: z.number(),
@@ -67,11 +69,11 @@ const validator = useValidator(zodSchema)
 
 watch(zodState, (newValue) => {
     try {
-        const data = validator.asyncValidatePartial(zodState.value)
+        const data = validator.validatePartial(zodState.value)
         console.log('Validation successful:', data)
     }
     catch (error) {
-        if (error instanceof validator.ValidationError) {
+        if (error instanceof ValidationError) {
             console.error('Validation failed:', error.errors)
         }
         else {
