@@ -1,7 +1,7 @@
 {
   "name": "nuxt-formulate",
   "version": "0.0.4",
-  "description": "A schema-drive form library for Nuxt",
+  "description": "A schema-driven form library for Nuxt",
   "repository": "https://github.com/zephkelly/nuxt-formulate",
   "license": "MIT",
   "type": "module",

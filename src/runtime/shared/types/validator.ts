@@ -28,7 +28,7 @@ export type SafeValidationResult<T> = {
     errors: ErrorStateType<T>;
 };
 
-export interface Validator<TSchema extends SchemaType> {
+export interface IFormulateValidator<TSchema extends SchemaType> {
     validate: (data: any | Ref<any>) => InferSchemaType<TSchema>;
     validateArray: (data: any[] | Ref<any[]>) => InferSchemaType<TSchema>[];
     validatePartial: (data: any | Ref<any>) => Partial<InferSchemaType<TSchema>>;

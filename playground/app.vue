@@ -43,6 +43,7 @@
         <p>{{ zodErrors?.boolean }}</p>
 
 
+        <button @click="testCall">Test API Call</button>
     </div>
 </template>
 
@@ -85,6 +86,17 @@ watch(zodState, (newValue) => {
 watch(zodErrors, (newValue) => {
     console.log('zodErrors', newValue)
 }, { deep: true })
+
+
+async function testCall() {
+    try {
+        const response = await $fetch('/api/test')
+        console.log('API response:', response)
+    }
+    catch (error) {
+        console.error('API call failed:', error)
+    }
+}
 </script>
 
 <style lang="css">
