@@ -48,6 +48,7 @@
 
 <script lang="ts" setup>
 import { z } from 'zod/v4'
+import type { StandardSchemaV1 } from '../src/runtime/shared/types/standard-schema/v1'
 
 const zodSchema = z.object({
     string: z.number(),
@@ -67,9 +68,8 @@ const validator = useValidator(zodSchema)
 
 watch(zodState, (newValue) => {
     try {
-        const data = validator.validatePartial(zodState.value)
-
-        console.log('Data', data)
+        const data = validator.asyncValidatePartial(zodState.value)
+        console.log('Validation successful:', data)
     }
     catch (error) {
         console.error('Validation error:', error)

@@ -61,7 +61,7 @@ export function restructureZodErrors<T = unknown>(treeError: any): ErrorStateTyp
         result = treeError.errors[0];
     }
     
-    return result  as ErrorStateType<T>;
+    return result as ErrorStateType<T>;
 }
 
 
