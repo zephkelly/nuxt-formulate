@@ -7,7 +7,7 @@
             placeholder="Name"
             type="text"
             :class="{
-                dirty: zodMetadata.string.isDirty$,
+                dirty: zodMetadata.string?.isDirty$,
                 }"
         />
         <p>{{ zodErrors?.string }}</p>
@@ -17,7 +17,7 @@
             placeholder="Number"
             type="number"
             :class="{
-                dirty: zodMetadata.number.isDirty$,
+                dirty: zodMetadata.number?.isDirty$,
                 }"
         />
         <p>{{ zodErrors?.number }}</p>
@@ -27,7 +27,7 @@
             placeholder="Int"
             type="number"
             :class="{
-                dirty: zodMetadata.int.isDirty$,
+                dirty: zodMetadata.int?.isDirty$,
                 }"
         />
         <p>{{ zodErrors?.int }}</p>
@@ -37,7 +37,7 @@
             placeholder="Boolean"
             type="checkbox"
             :class="{
-                dirty: zodMetadata.boolean.isDirty$,
+                dirty: zodMetadata.boolean?.isDirty$,
                 }"
         />
         <p>{{ zodErrors?.boolean }}</p>
@@ -49,6 +49,8 @@
 <script lang="ts" setup>
 import { z } from 'zod/v4'
 
+import { ValidationError } from '#nuxt-formulate';
+
 const zodSchema = z.object({
     string: z.number(),
     number: z.number(),
@@ -56,11 +58,29 @@ const zodSchema = z.object({
     boolean: z.boolean(),
 })
 
+
 const {
     state: zodState,
     meta: zodMetadata,
     error: zodErrors,
 } = useAutoForm(zodSchema)
+
+const validator = useValidator(zodSchema)
+
+watch(zodState, (newValue) => {
+    try {
+        const data = validator.validatePartial(zodState.value)
+        console.log('Validation successful:', data)
+    }
+    catch (error) {
+        if (error instanceof ValidationError) {
+            console.error('Validation failed:', error.errors)
+        }
+        else {
+            console.error('Unexpected error:', error)
+        }
+    }
+}, { deep: true })
 
 watch(zodErrors, (newValue) => {
     console.log('zodErrors', newValue)
