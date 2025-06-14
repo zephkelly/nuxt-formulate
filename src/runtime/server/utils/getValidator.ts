@@ -1,17 +1,16 @@
-import { type Ref } from "vue";
+import type { Ref } from "vue";
 
-import type { SchemaType, InferSchemaType } from '../../shared/types/schema';
-import { type IFormulateValidator, type SafeValidationResult } from "../../shared/types/validator";
+import type { SchemaType, InferSchemaType } from "../../shared/types/schema";
+import type { IFormulateValidator, SafeValidationResult } from "../../shared/types/validator";
 
 import { FormulateValidator } from "../../shared/utils/validator";
-
 import { unwrapRef } from "../../shared/utils/unwrap-ref";
 import { ensureArray } from "../../shared/utils/ensure-array";
 
 
 
-export function useValidator<TSchema extends SchemaType>(schema: TSchema): IFormulateValidator<TSchema> {
-    const validator = new FormulateValidator<TSchema>(schema);
+export function getValidator<TSchema extends SchemaType>(schema: TSchema): IFormulateValidator<TSchema> {
+    const validator = new FormulateValidator(schema);
 
     return {
         validate: (data: any | Ref<any>): InferSchemaType<TSchema> => {
