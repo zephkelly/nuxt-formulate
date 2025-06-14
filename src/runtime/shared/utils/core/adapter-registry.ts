@@ -12,6 +12,8 @@ export function registerAdapter<T>(name: AdapterType, adapter: SchemaAdapter<T>)
 export function getAdapterForSchema(schema: any): SchemaAdapter<any> | null {
     if (schema && typeof schema === 'object' && schema['~standard']) {
         const vendor = schema['~standard'].vendor;
+
+        console.log(schemaAdapters.values())
         for (const adapter of schemaAdapters.values()) {
             if (adapter.supportsVendor && adapter.supportsVendor(vendor)) {
                 return adapter;

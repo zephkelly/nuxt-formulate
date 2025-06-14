@@ -1,7 +1,7 @@
 import type { SchemaType, InferSchemaType } from '../../types/schema';
 import type { ErrorStateType } from '../../types/error';
 import { createPartialSchema, handleValidate } from "../../utils/core";
-import { type Validator, type SafeValidationResult, ValidationError } from "../../types/validator";
+import { type IFormulateValidator, type SafeValidationResult, ValidationError } from "../../types/validator";
 
 
 
