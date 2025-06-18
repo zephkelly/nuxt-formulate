@@ -9,7 +9,6 @@ export function handleZodValidate(schema: z.$ZodAny, state: z.infer<typeof schem
         return schema.parse(state);
     }
     catch (error) {
-        console.log('Zod validation error:', error);
         throw handleZodSchemaValidationErrors(error as z.$ZodError);
     }
 }

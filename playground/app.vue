@@ -53,11 +53,9 @@ import { z } from 'zod/v4'
 import { discriminatedUnionSchema, DiscriminatedUnionValidator, mockDiscriminatedUnionData } from './shared/schemas/test';
 import { ValidationError } from '#nuxt-formulate';
 
-console.log('Testing disc union')
 const testDiscriminatedUnion = useValidator(discriminatedUnionSchema)
 try {
     const testDiscriminatedUnion = DiscriminatedUnionValidator.validateArray(mockDiscriminatedUnionData)
-    console.log('Discriminated Union Validation Success:', testDiscriminatedUnion)
 }
 catch (error) {
     console.error('Discriminated Union Validation Error:', error)
@@ -67,7 +65,6 @@ catch (error) {
         console.error('Unexpected error:', error)
     }
 }
-console.log('Discriminated Union Test:', testDiscriminatedUnion)
 
 
 const zodSchema = z.object({
