@@ -1,5 +1,5 @@
 import type { DefaultValueGenerationOptions } from '../../types/defaults';
-import type { SchemaType, InferSchemaType } from '../../types/schema';
+import type { SchemaType, InferSchemaInputType } from '../../types/schema';
 
 
 export interface SchemaAdapter<T> {
@@ -23,17 +23,17 @@ export interface SchemaAdapter<T> {
     /**
      * Handle validation and return a consistent format
      */
-    syncArraysWithMetaState(metaState: any, state: InferSchemaType<SchemaType>, schema: SchemaType, options?: DefaultValueGenerationOptions): any;
+    syncArraysWithMetaState(metaState: any, state: InferSchemaInputType<SchemaType>, schema: SchemaType, options?: DefaultValueGenerationOptions): any;
 
     /**
      * Handle validation errors and return a consistent format
      */
-    handleValidate<TSchema extends SchemaType>(schema: SchemaType | Partial<InferSchemaType<TSchema>>, state: InferSchemaType<SchemaType>): T | any;
+    handleValidate<TSchema extends SchemaType>(schema: SchemaType | Partial<InferSchemaInputType<TSchema>>, state: InferSchemaInputType<SchemaType>): T | any;
 
     /**
      * Handle validation errors and return a consistent format
      */
-    handleValidationErrors(state: InferSchemaType<SchemaType>): any;
+    handleValidationErrors(state: InferSchemaInputType<SchemaType>): any;
 
     
     
