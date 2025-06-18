@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.0.7
+
+[compare changes](https://github.com/zephkelly/nuxt-formulate/compare/v0.0.6...v0.0.7)
+
+### 🚀 Enhancements
+
+- Partial schema and default value gen support for zod discriminated unions ([#60](https://github.com/zephkelly/nuxt-formulate/pull/60))
+
+### ❤️ Contributors
+
+- Evan Kelly <masterevank@gmail.com>
+
 ## v0.0.6
 
 [compare changes](https://github.com/zephkelly/nuxt-formulate/compare/v0.0.5...v0.0.6)
