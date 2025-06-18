@@ -88,7 +88,7 @@ const mockZodData = {
 }
 const mockPartialZodData = {
     string: 'Partial String',
-    number: 'string',
+    number: 24,
 }
 
 try {
@@ -140,6 +140,22 @@ async function testCall() {
     }
 }
 
+
+const literalSchema = z.literal('test')
+const literalSchemaValidator = useValidator(literalSchema)
+
+try {
+    const literalData = literalSchemaValidator.validatePartial(undefined)
+    console.log('Literal Data Validated:', 'test')
+}
+catch (error) {
+    console.error('Literal Validation Error:', error)
+    if (error instanceof ValidationError) {
+        console.error('Validation errors:', error.errors)
+    } else {
+        console.error('Unexpected error:', error)
+    }
+}
 
 
 const unknownSchema = z.unknown()
