@@ -9,9 +9,21 @@ export class FormulateValidator<TSchema extends SchemaType> {
     private schema: TSchema;
     private partialSchema: Partial<TSchema> | null;
 
-    constructor(schema: TSchema) {
+    constructor(schema: TSchema, options?: {
+        partial: TSchema
+    }) {
         this.schema = schema;
+
+        if (options?.partial) {
+            this.partialSchema = options.partial;
+            return;
+        }
+
         this.partialSchema = createPartialSchema(schema);
+    }
+
+    checkHasPartialSchema(): boolean {
+        return this.partialSchema !== null;
     }
 
     private ensureArray<T>(data: T[]): T[] {
@@ -100,7 +112,7 @@ export class FormulateValidator<TSchema extends SchemaType> {
             console.warn('Partial schema is not defined for this validator. Ensure the adapter supports partial validation.');
             return data as Partial<InferSchemaOutputType<TSchema>>;
         }
-        
+
         try {
             const result = handleValidate(this.partialSchema, data);
             

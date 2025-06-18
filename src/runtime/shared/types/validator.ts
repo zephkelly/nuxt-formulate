@@ -1,7 +1,7 @@
 import type { Ref } from 'vue';
 import type { SchemaType } from './schema';
 import type { ErrorStateType } from './error';
-import type { InferSchemaType } from './schema';
+import type { InferSchemaOutputType } from './schema';
 
 
 
@@ -29,29 +29,29 @@ export type SafeValidationResult<T> = {
 };
 
 export interface IFormulateValidator<TSchema extends SchemaType> {
-    validate: (data: any | Ref<any>) => InferSchemaType<TSchema>;
-    validateArray: (data: any[] | Ref<any[]>) => InferSchemaType<TSchema>[];
-    validatePartial: (data: any | Ref<any>) => Partial<InferSchemaType<TSchema>>;
-    validatePartialArray: (data: any[] | Ref<any[]>) => Partial<InferSchemaType<TSchema>>[];
+    validate: (data: any | Ref<any>) => InferSchemaOutputType<TSchema>;
+    validateArray: (data: any[] | Ref<any[]>) => InferSchemaOutputType<TSchema>[];
+    validatePartial?: (data: any | Ref<any>) => Partial<InferSchemaOutputType<TSchema>>;
+    validatePartialArray?: (data: any[] | Ref<any[]>) => Partial<InferSchemaOutputType<TSchema>>[];
     
-    asyncValidate: (data: any | Ref<any>) => Promise<InferSchemaType<TSchema>>;
-    asyncValidateArray: (data: any[] | Ref<any[]>) => Promise<InferSchemaType<TSchema>[]>;
-    asyncValidatePartial: (data: any | Ref<any>) => Promise<Partial<InferSchemaType<TSchema>>>;
-    asyncValidatePartialArray: (data: any[] | Ref<any[]>) => Promise<Partial<InferSchemaType<TSchema>>[]>;
+    asyncValidate: (data: any | Ref<any>) => Promise<InferSchemaOutputType<TSchema>>;
+    asyncValidateArray: (data: any[] | Ref<any[]>) => Promise<InferSchemaOutputType<TSchema>[]>;
+    asyncValidatePartial?: (data: any | Ref<any>) => Promise<Partial<InferSchemaOutputType<TSchema>>>;
+    asyncValidatePartialArray?: (data: any[] | Ref<any[]>) => Promise<Partial<InferSchemaOutputType<TSchema>>[]>;
 
-    safeValidate: (data: any | Ref<any>) => SafeValidationResult<InferSchemaType<TSchema>>;
-    safeValidateArray: (data: any[] | Ref<any[]>) => SafeValidationResult<InferSchemaType<TSchema>>[];
-    safeValidatePartial: (data: any | Ref<any>) => SafeValidationResult<Partial<InferSchemaType<TSchema>>>;
-    safeValidatePartialArray: (data: any[] | Ref<any[]>) => SafeValidationResult<Partial<InferSchemaType<TSchema>>>[];
+    safeValidate: (data: any | Ref<any>) => SafeValidationResult<InferSchemaOutputType<TSchema>>;
+    safeValidateArray: (data: any[] | Ref<any[]>) => SafeValidationResult<InferSchemaOutputType<TSchema>>[];
+    safeValidatePartial?: (data: any | Ref<any>) => SafeValidationResult<Partial<InferSchemaOutputType<TSchema>>>;
+    safeValidatePartialArray?: (data: any[] | Ref<any[]>) => SafeValidationResult<Partial<InferSchemaOutputType<TSchema>>>[];
     
-    safeAsyncValidate: (data: any | Ref<any>) => Promise<SafeValidationResult<InferSchemaType<TSchema>>>;
-    safeAsyncValidateArray: (data: any[] | Ref<any[]>) => Promise<SafeValidationResult<InferSchemaType<TSchema>>[]>;
-    safeAsyncValidatePartial: (data: any | Ref<any>) => Promise<SafeValidationResult<Partial<InferSchemaType<TSchema>>>>;
-    safeAsyncValidatePartialArray: (data: any[] | Ref<any[]>) => Promise<SafeValidationResult<Partial<InferSchemaType<TSchema>>>[]>;
+    safeAsyncValidate: (data: any | Ref<any>) => Promise<SafeValidationResult<InferSchemaOutputType<TSchema>>>;
+    safeAsyncValidateArray: (data: any[] | Ref<any[]>) => Promise<SafeValidationResult<InferSchemaOutputType<TSchema>>[]>;
+    safeAsyncValidatePartial?: (data: any | Ref<any>) => Promise<SafeValidationResult<Partial<InferSchemaOutputType<TSchema>>>>;
+    safeAsyncValidatePartialArray?: (data: any[] | Ref<any[]>) => Promise<SafeValidationResult<Partial<InferSchemaOutputType<TSchema>>>[]>;
     
-    isValidationError: (error: unknown) => error is ValidationError<InferSchemaType<TSchema>>;
-    isPartialValidationError: (error: unknown) => error is ValidationError<Partial<InferSchemaType<TSchema>>>;
+    isValidationError: (error: unknown) => error is ValidationError<InferSchemaOutputType<TSchema>>;
+    isPartialValidationError?: (error: unknown) => error is ValidationError<Partial<InferSchemaOutputType<TSchema>>>;
     
-    ValidationError: typeof ValidationError<InferSchemaType<TSchema>>;
-    PartialValidationError: typeof ValidationError<Partial<InferSchemaType<TSchema>>>;
+    ValidationError: typeof ValidationError<InferSchemaOutputType<TSchema>>;
+    PartialValidationError?: typeof ValidationError<Partial<InferSchemaOutputType<TSchema>>>;
 }
