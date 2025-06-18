@@ -22,25 +22,6 @@ export function createZodPartialSchema(schema: z.ZodType | zCore.$ZodType): z.Zo
     }
 
     switch (schemaType) {
-        // Primitive types that don't need partial conversion
-        case 'string':
-        case 'number':
-        case 'bigint':
-        case 'int':
-        case 'boolean':
-        case 'date':
-        case 'symbol':
-        case 'undefined':
-        case 'null':
-        case 'void':
-        case 'any':
-        case 'unknown':
-        case 'never':
-        case 'nan':
-        case 'optional':
-            //@ts-ignore
-            return schema;
-
         case 'object': {
             // @ts-ignore
             return schema.partial();
@@ -93,24 +74,37 @@ export function createZodPartialSchema(schema: z.ZodType | zCore.$ZodType): z.Zo
             return z.pipe(partialInSchema, partialOutSchema);
         }
 
-        case 'transform': {
+        case 'string':
+        case 'number':
+        case 'bigint':
+        case 'int':
+        case 'boolean':
+        case 'date':
+        case 'symbol':
+        case 'undefined':
+        case 'null':
+        case 'void':
+        case 'any':
+        case 'unknown':
+        case 'never':
+        case 'nan':
+        case 'optional':
+        case 'nonoptional':
+        case 'transform':
+        case 'readonly':
+        case 'nullable':
+        case 'default':
+        case 'prefault':
+        case 'catch':
+        case 'custom':
+        case 'file':
+        case 'literal':
+        case 'template_literal': {
             //@ts-ignore
             return schema.optional();  
         }
 
-        case 'template_literal': {
-            //@ts-ignore
-            return schema.optional();
-        }
-     
-        case 'literal': {
-            // @ts-ignore
-            return schema.optional();
-        }
-
-
         /// YET TO SUPPORT ---------------------------------------------------
-
         case 'tuple': {
             console.warn(`Tuple schema is not supported for partial schemas`);
             console.log(schema);
@@ -135,31 +129,23 @@ export function createZodPartialSchema(schema: z.ZodType | zCore.$ZodType): z.Zo
             return null;
         }
 
+        case 'enum': {
+            console.warn(`File schema is not supported for partial schemas`);
+            console.log(schema);
+            return null
+        }
+
+
+
         case 'intersection': {
             console.log(`Intersection schema is not supported for partial schemas`);
             console.log(schema);
             return null;
         }
 
-        case 'nullable': {
-            //@ts-ignore
-            return schema.optional();
-        }
 
-        case 'default': {
-            console.warn(`Default schema is not supported for partial schemas`);
-            console.log(schema);    
-            return null;
-        }
-
-        case 'catch': {
-            console.warn(`Catch schema is not supported for partial schemas`);
-            console.log(schema);
-            return null;
-        }
-
-        case 'promise': {
-            console.warn(`Promise schema is not supported for partial schemas`);
+        case 'success': {
+            console.warn(`Success schema is not supported for partial schemas`);
             console.log(schema);
             return null;
         }
@@ -169,47 +155,9 @@ export function createZodPartialSchema(schema: z.ZodType | zCore.$ZodType): z.Zo
             console.log(schema);
             return null;
         }
-
-        case 'readonly': {
-            console.warn(`Readonly schema is not supported for partial schemas`);
-            console.log(schema);
-            return null;
-        }
-
-        case 'success': {
-            console.warn(`Success schema is not supported for partial schemas`);
-            console.log(schema);
-            return null;
-        }
-
-        case 'file': {
-            console.warn(`File schema is not supported for partial schemas`);
-            console.log(schema);
-            return null;
-        }
-
-        case 'enum': {
-            console.warn(`File schema is not supported for partial schemas`);
-            console.log(schema);
-            return null
-        }
-
-        case 'nonoptional': {
-            console.warn(`Nonoptional schema is not supported for partial schemas`);
-            console.log(schema);
-            return null;
-        }
-
-        case 'prefault': {
-            console.warn(`Prefault schema is not supported for partial schemas`);
-            console.log(schema);
-            return null;
-        }
-
-        case 'custom': {
-            console.warn(`Custom schema is not supported for partial schemas`);
-            console.log(schema);
-            return null;
+        
+        case 'promise': {
+            throw new Error(`Promise schema is deprecated in Zod 4. Not supported for partial schemas`);
         }
 
         default: {
