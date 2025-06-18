@@ -7,9 +7,16 @@ export {
 export {
     ValidationError,
     type SafeValidationResult,
-    type Validator
+    type IFormulateValidator
 } from './shared/types/validator';
 
+export {
+    getValidator
+} from './shared/utils/validator/getValidator';
+
+export {
+    useValidator
+} from './app/composables/useValidator';
 
 export {
     type ErrorStateType,

@@ -40,18 +40,14 @@ export function createZodSchemaDefaultValues(
     if (schemaType === 'union') {
        const { method = 'sensible' } = options || {};
 
-        if (method === 'undefined') {
+        if (method === 'undefined' || method === 'sensible') {
             return undefined;
         }
         else if (method === 'null') {
             return null;
         }
-        else if (method === 'sensible') {
-            return []
-        }
     }
     
-
     return createZodTypeSchemaDefaultValue(schema, options);
 }
 
