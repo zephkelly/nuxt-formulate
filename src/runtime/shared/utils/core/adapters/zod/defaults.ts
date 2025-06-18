@@ -36,10 +36,21 @@ export function createZodSchemaDefaultValues(
         //@ts-ignore - We know the type is an array
         return handleZodArray(schema as z.$ZodArray, options, currentDepth);
     }
+
+    if (schemaType === 'union') {
+       const { method = 'sensible' } = options || {};
+
+        if (method === 'undefined') {
+            return undefined;
+        }
+        else if (method === 'null') {
+            return null;
+        }
+        else if (method === 'sensible') {
+            return []
+        }
+    }
     
-
-    // -- Will handle other Zod types here --
-
 
     return createZodTypeSchemaDefaultValue(schema, options);
 }

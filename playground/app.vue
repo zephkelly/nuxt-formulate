@@ -50,7 +50,25 @@
 <script lang="ts" setup>
 import { z } from 'zod/v4'
 
+import { discriminatedUnionSchema, DiscriminatedUnionValidator, mockDiscriminatedUnionData } from './shared/schemas/test';
 import { ValidationError } from '#nuxt-formulate';
+
+console.log('Testing disc union')
+const testDiscriminatedUnion = useValidator(discriminatedUnionSchema)
+try {
+    const testDiscriminatedUnion = DiscriminatedUnionValidator.validateArray(mockDiscriminatedUnionData)
+    console.log('Discriminated Union Validation Success:', testDiscriminatedUnion)
+}
+catch (error) {
+    console.error('Discriminated Union Validation Error:', error)
+    if (error instanceof ValidationError) {
+        console.error('Validation errors:', error.errors)
+    } else {
+        console.error('Unexpected error:', error)
+    }
+}
+console.log('Discriminated Union Test:', testDiscriminatedUnion)
+
 
 const zodSchema = z.object({
     string: z.number(),
@@ -60,28 +78,14 @@ const zodSchema = z.object({
 })
 
 
+
 const {
     state: zodState,
     meta: zodMetadata,
     error: zodErrors,
 } = useAutoForm(zodSchema)
 
-const validator = useValidator(zodSchema)
 
-watch(zodState, (newValue) => {
-    try {
-        const data = validator.validatePartial(zodState.value)
-        console.log('Validation successful:', data)
-    }
-    catch (error) {
-        if (error instanceof ValidationError) {
-            console.error('Validation failed:', error.errors)
-        }
-        else {
-            console.error('Unexpected error:', error)
-        }
-    }
-}, { deep: true })
 
 watch(zodErrors, (newValue) => {
     console.log('zodErrors', newValue)

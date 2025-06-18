@@ -65,6 +65,10 @@ export default ${JSON.stringify(_options)}
             {
                 name: 'useValidator',
                 from: resolver.resolve('runtime/app/composables/useValidator'),
+            },
+            {
+                name: 'getValidator',
+                from: resolver.resolve('runtime/shared/utils/validator/getValidator'),
             }
         ])
 

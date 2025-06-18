@@ -11,7 +11,13 @@ export class FormulateValidator<TSchema extends SchemaType> {
 
     constructor(schema: TSchema) {
         this.schema = schema;
+
         this.partialSchema = createPartialSchema(schema);
+
+        this.partialSchema.def.options.forEach((option: any) => {
+            console.dir(option.shape, { depth: 4, colors: true });
+        });
+
     }
 
     private ensureArray<T>(data: T[]): T[] {
