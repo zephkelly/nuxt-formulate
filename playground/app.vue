@@ -53,6 +53,8 @@ import { z } from 'zod/v4'
 import { discriminatedUnionSchema, DiscriminatedUnionValidator, mockDiscriminatedUnionData } from './shared/schemas/test';
 import { ValidationError } from '#nuxt-formulate';
 
+type DiscriminatedUnion = z.infer<typeof discriminatedUnionSchema>
+
 const testDiscriminatedUnion = useValidator(discriminatedUnionSchema)
 try {
     const testDiscriminatedUnion = DiscriminatedUnionValidator.validateArray(mockDiscriminatedUnionData)
@@ -66,15 +68,54 @@ catch (error) {
     }
 }
 
-
 const zodSchema = z.object({
-    string: z.number(),
+    string: z.string(),
     number: z.number(),
     int: z.int(),
     boolean: z.boolean(),
-})
+}).transform((data) => ({
+    string: data.string.toString(),
+    number: data.number,
+}))
 
+const zodSchemaValidator = useValidator(zodSchema)
 
+const mockZodData = {
+    string: 'Test String',
+    number: 42,
+    int: 100,
+    boolean: true,
+}
+const mockPartialZodData = {
+    string: 'Partial String',
+    number: 24,
+}
+
+try {
+    const validatedData = zodSchemaValidator.validate(mockZodData)
+    console.log('Zod Data Validated:', validatedData)
+}
+catch (error) {
+    console.error('Zod Validation Error:', error)
+    if (error instanceof ValidationError) {
+        console.error('Validation errors:', error.errors)
+    } else {
+        console.error('Unexpected error:', error)
+    }
+}
+
+try {
+    const validatedPartialData = zodSchemaValidator.validatePartial(mockPartialZodData)
+    console.log('Zod Partial Data Validated:', validatedPartialData)
+}
+catch (error) {
+    console.error('Zod Partial Validation Error:', error)
+    if (error instanceof ValidationError) {
+        console.error('Validation errors:', error.errors)
+    } else {
+        console.error('Unexpected error:', error)
+    }
+}
 
 const {
     state: zodState,
@@ -98,6 +139,28 @@ async function testCall() {
         console.error('API call failed:', error)
     }
 }
+
+
+const literalSchema = z.literal('test')
+const literalSchemaValidator = useValidator(literalSchema)
+
+try {
+    const literalData = literalSchemaValidator.validatePartial(undefined)
+    console.log('Literal Data Validated:', 'test')
+}
+catch (error) {
+    console.error('Literal Validation Error:', error)
+    if (error instanceof ValidationError) {
+        console.error('Validation errors:', error.errors)
+    } else {
+        console.error('Unexpected error:', error)
+    }
+}
+
+
+const unknownSchema = z.unknown()
+const unknownSchemaValidator = useValidator(unknownSchema)
+
 </script>
 
 <style lang="css">
