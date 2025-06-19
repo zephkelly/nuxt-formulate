@@ -10,8 +10,10 @@ import { ensureArray } from "../../shared/utils/ensure-array";
 
 
 
-export function useValidator<TSchema extends SchemaType>(schema: TSchema): IFormulateValidator<TSchema> {
-    const validator = new FormulateValidator<TSchema>(schema);
+export function useValidator<TSchema extends SchemaType>(schema: TSchema, options?: {
+    partial: TSchema;
+}): IFormulateValidator<TSchema> {
+    const validator = new FormulateValidator<TSchema>(schema, options);
 
     return {
         validate: (data: any | Ref<any>): InferSchemaOutputType<TSchema> => {

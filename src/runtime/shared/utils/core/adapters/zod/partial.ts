@@ -104,39 +104,39 @@ export function createZodPartialSchema(schema: z.ZodType | zCore.$ZodType): z.Zo
             return schema.optional();  
         }
 
-        /// YET TO SUPPORT ---------------------------------------------------
         case 'tuple': {
             console.warn(`Tuple schema is not supported for partial schemas`);
             console.log(schema);
             return null;
         }
-
+        
         case 'record': {
-           console.warn(`Record schema is not supported for partial schemas`);
-           console.log(schema);
+            console.warn(`Record schema is not supported for partial schemas`);
+            console.log(schema);
             return null;
         }
-
+        
         case 'map': {
             console.warn(`Map schema is not supported for partial schemas`);
             console.log(schema);
             return null;
         }
-
+        
         case 'set': {
             console.warn(`Set schema is not supported for partial schemas`);
             console.log(schema);
             return null;
         }
-
+        
         case 'enum': {
             console.warn(`File schema is not supported for partial schemas`);
             console.log(schema);
             return null
         }
-
-
-
+        
+        
+        
+        /// YET TO SUPPORT ---------------------------------------------------
         case 'intersection': {
             console.log(`Intersection schema is not supported for partial schemas`);
             console.log(schema);
@@ -156,6 +156,8 @@ export function createZodPartialSchema(schema: z.ZodType | zCore.$ZodType): z.Zo
             return null;
         }
         
+
+        // WONT SUPPORT -----------------------------------------------------
         case 'promise': {
             throw new Error(`Promise schema is deprecated in Zod 4. Not supported for partial schemas`);
         }
